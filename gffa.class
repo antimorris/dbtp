@@ -6,11 +6,13 @@
 using namespace std;
 class nodeQp {
 	int id,
-	string childrens, predicates;
+	string childrens, definition;
 	public:
 	nodeQP (int);
 	void addChildren (string);
-	void addPredicate (string)
+	void addPredicate (string);
+	void getPredicates (void);
+	
 };
 
 //////////////////////////////////////////////////////////////
