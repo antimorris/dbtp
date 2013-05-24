@@ -33,7 +33,7 @@ class aip {
 	void addPredicate (int, string, string);
 	string checkPredicate (string);
 	string getPredicate (string);
-    void showFullRegistry (void);
+        void showFullRegistry (void);
 };
 
 //////////////////////////////////////////////////////////////
@@ -113,6 +113,6 @@ int main ()
 	aipRegistry.addPredicate(0,"prod1","hello");
 	cout << "Node ID: " << node1.nodeId << " TYPE: " << node1.nodeType << endl;
 	cout << "Node ID: " << node2.nodeId << " TYPE: " << node2.nodeType << endl;
-    cout << "AIP REGISTRY" << endl << endl;
+        cout << "AIP REGISTRY" << endl << endl;
 	exit(0);
 }
