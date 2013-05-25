@@ -8,10 +8,13 @@
 #include <sstream>
 using namespace std;
 
+
+
 //////////////////////////////////////////////////////////////
-// nodeQP Class definition
+// NodeQP Class definition
 //////////////////////////////////////////////////////////////
-class nodeQP {
+class NodeQP
+{
 	public:
 	int nodeId, nodeType;
 	string children, definition;
@@ -19,77 +22,87 @@ class nodeQP {
 	void addPredicate (int);
 	vector<int> getChildren (void);
 	vector<string>	getPredicates (void);
-	nodeQP (int, int);
+	NodeQP (int, int);
 };
 
 
 //////////////////////////////////////////////////////////////
-// AIP Class definition
+// Predicate Class definition
 //////////////////////////////////////////////////////////////
-class aip {
-	public:
-	int loc,predicate;
+class PredicateData
+{
+        public:
+        class PredicateStruct
+        {
+                public:
+                int predLoc_, predDef_;
+                string predKey_;
+                int    getPredicateLoc () const {return predLoc_;}
+                string getPredicateKey () const {return predKey_;}
+                int getPredicateDef () const {return predDef_;}
+        };
 	string key;
-	map<int,string> registry;
-        map<int,string>::iterator it;
-	void addPredicate (int, string, int);
+	map<int,PredicateStruct> registry;
+        void addPredicate (int, string, int);
 	string checkPredicate (int);
-	string getPredicate (int);
         void showFullRegistry (void);
 };
 
 //////////////////////////////////////////////////////////////
-// AIP:::addPredicate definition
+// PredicateData:::addPredicate definition
 //////////////////////////////////////////////////////////////
-void aip::addPredicate (int r_loc, string r_key, int r_pred)
+void PredicateData::addPredicate (int rloc, string rkey, int rpred)
 {
-        stringstream key;
-        key << r_loc << "," << r_key << "," << r_pred;
-        registry.insert(pair<int,string>(r_pred,key.str()));
+        PredicateStruct predicate;
+        predicate.predLoc_ = rloc;
+        predicate.predKey_ = rkey;
+        predicate.predDef_ = rpred;
+        //cout << "Current registry Size: " << registry.size() << endl;
+        int newId = registry.size()+1;
+        //cout << "New registry Size: " << registry.size() << endl;
+        registry.insert(pair<int,PredicateStruct>(newId,predicate));
+        cout << "Adding : " << newId << " -- " << rloc << " -- " << rkey << " -- " << rpred << endl;
+        //cout << "READ : " << registry[newId].predKey_ << endl;
 }
 
 //////////////////////////////////////////////////////////////
-// AIP::checkPredicate definition
+// PredicateData::checkPredicate definition
 //////////////////////////////////////////////////////////////
-string aip::checkPredicate (int key)
+string PredicateData::checkPredicate (int key)
 {
-        map<string,string>::iterator it;
-
+        cout << "Checking KEY: [" << key << "] on AIP registry ... " ;
         if (registry.find(key) == registry.end())
         {
-                cout << "KEY DOES NOT EXIST\n";
+                cout << "KEY DOES NOT EXIST" << endl;
                 return "NULL";
         }
         else
         {
-                cout << "KEY EXISTSSSSSSS --> " << registry[key] << endl;
-                return registry[key];
+                stringstream predFound;
+                predFound << registry[key].predLoc_ << "-" << registry[key].predKey_ << "-" << registry[key].predDef_;
+                cout << "KEY EXISTS --> " << predFound.str() << endl;
+                return predFound.str() ;
         }
 }
 
 //////////////////////////////////////////////////////////////
-// AIP::getPredicate definition
+// PredicateData::getPredicate definition
 //////////////////////////////////////////////////////////////
-string aip::getPredicate(int)
+void PredicateData::showFullRegistry(void)
 {
-
-}
-
-//////////////////////////////////////////////////////////////
-// AIP::getPredicate definition
-//////////////////////////////////////////////////////////////
-void aip::showFullRegistry(void)
-{
-        for (map<int,string>::iterator it=registry.begin(); it!=registry.end(); ++it)
+        cout << "AIP REGISTRY" << endl << endl;
+        for (map<int,PredicateStruct>::const_iterator it=registry.begin(); it!=registry.end(); ++it)
         {
-                cout << it->first << " => " << it->second << '\n';
+                stringstream predFound;
+                predFound << it->second.predLoc_ << "-" << it->second.predKey_ << "-" << it->second.predDef_;
+                cout << it->first << " => " << predFound.str() << '\n';
         }
 }
 
 //////////////////////////////////////////////////////////////
 // NodeQP Constructor definition
 //////////////////////////////////////////////////////////////
-nodeQP::nodeQP (int a, int b)
+NodeQP::NodeQP (int a, int b)
 {
 	nodeId 	 = a;
 	nodeType = b;
@@ -98,44 +111,53 @@ nodeQP::nodeQP (int a, int b)
 //////////////////////////////////////////////////////////////
 // NodeQP addChildren definition
 //////////////////////////////////////////////////////////////
-void nodeQP::addChildren (int id)
+void NodeQP::addChildren (int id)
 {
 }
 
 //////////////////////////////////////////////////////////////
 // NodeQP addPredicate definition
 //////////////////////////////////////////////////////////////
-void nodeQP::addPredicate (int)
+void NodeQP::addPredicate (int)
 {
 }
 //////////////////////////////////////////////////////////////
 // NodeQP getPredicates function definition
 //////////////////////////////////////////////////////////////
-vector<string> nodeQP::getPredicates (void)
+vector<string> NodeQP::getPredicates (void)
 {
 }
 
 //////////////////////////////////////////////////////////////
 // NodeQP getPredicates function definition
 //////////////////////////////////////////////////////////////
-vector<int> nodeQP::getChildren (void)
+vector<int> NodeQP::getChildren (void)
 {
 }
+
 
 //////////////////////////////////////////////////////////////
 // Main Function
 //////////////////////////////////////////////////////////////
 int main ()
 {
-	nodeQP node1 (0,1);
-	nodeQP node2 (1,2);
-	aip aipRegistry;
-	aipRegistry.addPredicate(0,"prod1",0);
+	NodeQP node1 (0,1);
+	NodeQP node2 (1,2);
+
 	cout << "Node ID: " << node1.nodeId << " TYPE: " << node1.nodeType << endl;
 	cout << "Node ID: " << node2.nodeId << " TYPE: " << node2.nodeType << endl;
-        aipRegistry.checkPredicate(1);
-        aipRegistry.checkPredicate(0);
-        cout << "AIP REGISTRY" << endl << endl;
+        PredicateData predicateList;
+	PredicateData aipRegistry;
+
+	aipRegistry.showFullRegistry();
+	aipRegistry.checkPredicate(0);
+
+	aipRegistry.addPredicate(0,"proda",0);
+	aipRegistry.addPredicate(1,"prodb",1);
+	aipRegistry.addPredicate(2,"prodc",2);
+	aipRegistry.addPredicate(3,"prodd",3);
+
         aipRegistry.showFullRegistry();
+        aipRegistry.checkPredicate(1);
 	exit(0);
 }
