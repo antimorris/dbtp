@@ -160,6 +160,9 @@ NodeQP::NodeQP (int a, int b)
 {
 	nodeId 	 = a;
 	nodeType = b;
+	stringstream msg;
+	msg << "Adding new NodeQP with ID (" << a << ") and TYPE (" << b << ")";
+	logMsgT(__func__,msg.str(),2,LOGFILE);
 }
 
 //////////////////////////////////////////////////////////////
@@ -204,7 +207,7 @@ void logMsgT (string function_name, string msg_data, int msg_code, string logfil
         else                     {msg_prefix = "UNDEFINED";     }
         msg_timestamp = getTime();
         ofstream myfile;
-        myfile.open (logfile.c_str());
+        myfile.open (logfile.c_str(), ofstream::out | ofstream::app);
         myfile << "[" << msg_timestamp << "] [" << msg_prefix << "] ["
          << function_name << "] [" << msg_data << "]" << endl;
         cout << "[" << msg_timestamp << "] [" << msg_prefix << "] ["
