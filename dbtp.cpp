@@ -117,7 +117,6 @@ void NodeQP::addNode (int rpid, char rtype)
 	{
 	        nodeTmp = &nodeList[rpid];
 	        nodeTmp->nodeChildren.push_back(newId);
-                //nodeTmp.nodeChildren.push_back(newId);
                 cout << "Reading info for ID: " << rpid << " PARENT: " << nodeTmp->nodeParent << "- " << nodeTmp->nodeType << "- " << nodeTmp->getChildren() << endl;
 	}
 
@@ -165,14 +164,31 @@ string NodeQP::getChildren (void) const
 //////////////////////////////////////////////////////////////
 // NodeQP addPredicate definition
 //////////////////////////////////////////////////////////////
-void NodeQP::addPredicate (int)
+void NodeQP::addPredicate (int rnid, string rpredicate)
 {
+        stringstream msg;
+        NodeQP* node;
+        node = &nodeList[rnid];
+        node->nodeDefinition = rpredicate;
+        msg << "Adding predicate : (" << rpredicate << ") to NODE: " << rnid ;
+        logMsgT(__func__, msg.str() ,2,LOGFILE);
+
 }
 //////////////////////////////////////////////////////////////
-// NodeQP getPredicates function definition
+// NodeQP getAttributes function definition
 //////////////////////////////////////////////////////////////
-vector<string> NodeQP::getPredicates (void)
+vector<string> NodeQP::getAttributes (int rnid)
 {
+        NodeQP* node;
+        node = &nodeList[rnid];
+        istringstream predicateF(node->nodeDefinition);
+        string p;
+        vector<string> predList;
+        while (getline(predicateF, p, ','))
+        {
+                predList.push_back(p);
+        }
+        return predList;
 }
 
 //////////////////////////////////////////////////////////////

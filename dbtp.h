@@ -22,12 +22,13 @@ class NodeQP
 	public:
 	char nodeType;
 	int nodeParent;
-	vector<int> nodeChildren;
 	string nodeDefinition;
-	void addPredicate (int);
+	vector<int> nodeChildren;
 	map<int,NodeQP> nodeList;
 	string getChildren (void) const;
-	vector<string>	getPredicates (void);
+	string getPredicate (void) const;
+	vector<string>	getAttributes (int);
+	void addPredicate (int, string);
 	void addNode (int, char);
         void initialize (void);
         void showNodeList (void);
