@@ -7,23 +7,28 @@ using namespace std;
 //////////////////////////////////////////////////////////////
 int main ()
 {
-	NodeQP node1(0,1);
-	NodeQP node2(1,2);
-
-	cout << "Node ID: " << node1.nodeId << " TYPE: " << node1.nodeType << endl;
-	cout << "Node ID: " << node2.nodeId << " TYPE: " << node2.nodeType << endl;
-        PredicateList conjPredicateList;
+	PredicateList conjPredicateList;
+        NodeQP queryPlan;
+        queryPlan.initialize();
+        queryPlan.addNode(1,'O');
+        queryPlan.addNode(2,'P');
+        queryPlan.addNode(1,'P');
+        queryPlan.addNode(1,'O');
+        queryPlan.addNode(1,'P');
+        queryPlan.addNode(3,'P');
+        queryPlan.addNode(3,'P');
+        queryPlan.showNodeList();
 
         // TEST
         conjPredicateList.addPredicate("p1 = p2");
-        conjPredicateList.addPredicate("p1 = p3");
-        conjPredicateList.addPredicate("p3 = p4");
+        conjPredicateList.addPredicate("p2 = p3");
+        conjPredicateList.addPredicate("p2 = p4");
         conjPredicateList.addPredicate("p4 = p5");
-        conjPredicateList.addPredicate("p5 = p6");
-        conjPredicateList.addPredicate("p6 = p7");
-        conjPredicateList.addPredicate("p7 = p8");
-        conjPredicateList.addPredicate("p8 = p9");
-        conjPredicateList.addPredicate("p9 = p0");
+        conjPredicateList.addPredicate("p5 = p1");
+        conjPredicateList.addPredicate("p6 = p9");
+        conjPredicateList.addPredicate("p9 = p8");
+        conjPredicateList.addPredicate("p8 = p10");
+        conjPredicateList.addPredicate("p4 = p10");
         conjPredicateList.addPredicate("p0 = p1");
         conjPredicateList.showFullRegistry();
 

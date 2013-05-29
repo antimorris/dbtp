@@ -14,20 +14,23 @@ using namespace std;
 string getTime (void);
 void logMsgT (string function_name, string msg_data, int msg_code, string logfile);
 
-
 //////////////////////////////////////////////////////////////
 // NodeQP Class definition
 //////////////////////////////////////////////////////////////
 class NodeQP
 {
 	public:
-	int nodeId, nodeType;
-	string children, definition;
-	void addChildren (int);
+	char nodeType;
+	int nodeParent;
+	vector<int> nodeChildren;
+	string nodeDefinition;
 	void addPredicate (int);
-	vector<int> getChildren (void);
+	map<int,NodeQP> nodeList;
+	string getChildren (void) const;
 	vector<string>	getPredicates (void);
-	NodeQP (int, int);
+	void addNode (int, char);
+        void initialize (void);
+        void showNodeList (void);
 };
 
 //////////////////////////////////////////////////////////////

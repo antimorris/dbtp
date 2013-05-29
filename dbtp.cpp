@@ -48,7 +48,7 @@ void PredicateData::addPredicate (int rloc, string rkey, int rpred)
         predicate.predLoc = rloc;
         predicate.predKey = rkey;
         predicate.predDef = rpred;
-        int newId = registry.size()+1;
+        int newId = registry.size() + 1;
         registry.insert(pair<int,PredicateStruct>(newId,predicate));
         stringstream msg;
         msg << "Adding : " << newId << " -- " << rloc << " -- " << rkey << " -- " << rpred;
@@ -98,21 +98,69 @@ void PredicateData::showFullRegistry(void)
 //////////////////////////////////////////////////////////////
 // NodeQP Constructor definition
 //////////////////////////////////////////////////////////////
-NodeQP::NodeQP (int a, int b)
+void NodeQP::addNode (int rpid, char rtype)
 {
-	nodeId 	 = a;
-	nodeType = b;
 	stringstream msg;
-	msg << "Adding new NodeQP with ID (" << a << ") and TYPE (" << b << ")";
+	NodeQP node;
+	NodeQP* nodeTmp;
+	node.nodeType = rtype;
+	node.nodeParent = rpid;
+	int newId = nodeList.size() + 1;
+	msg << "Adding new NodeQP with ID (" << newId << ") and PID (" << rpid << ") and TYPE (" << rtype << ")";
 	logMsgT(__func__,msg.str(),2,LOGFILE);
+	nodeList.insert(pair<int,NodeQP>(newId,node));
+	if (rpid == 0)
+	{
+	        cout << "PID 0. Main node " << endl;
+	}
+	else
+	{
+	        nodeTmp = &nodeList[rpid];
+	        nodeTmp->nodeChildren.push_back(newId);
+                //nodeTmp.nodeChildren.push_back(newId);
+                cout << "Reading info for ID: " << rpid << " PARENT: " << nodeTmp->nodeParent << "- " << nodeTmp->nodeType << "- " << nodeTmp->getChildren() << endl;
+	}
+
 }
 
 //////////////////////////////////////////////////////////////
-// NodeQP addChildren definition
+// NodeQP initialize function definition
 //////////////////////////////////////////////////////////////
-void NodeQP::addChildren (int id)
+void NodeQP::initialize(void)
 {
+        addNode(0,'M');
+};
+
+//////////////////////////////////////////////////////////////
+// NodeQP ShowNodeList definition
+//////////////////////////////////////////////////////////////
+void NodeQP::showNodeList (void)
+{
+        cout << endl << "NODE LIST" << endl;
+        for (map<int,NodeQP>::const_iterator it=nodeList.begin(); it!=nodeList.end(); ++it)
+        {
+                stringstream nodeFound;
+                nodeFound << "ID: " << it->first << " TYPE: " << it->second.nodeType << " CHILDREN: " << it->second.getChildren() ;
+                cout << nodeFound.str() << '\n';
+        }
+        cout << "-------------" << endl << endl;
 }
+
+//////////////////////////////////////////////////////////////
+// NodeQP getChildren function definition
+//////////////////////////////////////////////////////////////
+string NodeQP::getChildren (void) const
+{
+        stringstream childrenList;
+        string children;
+        for (unsigned i=0; i<nodeChildren.size(); i++)
+        {
+                childrenList << nodeChildren.at(i) << ",";
+        }
+        children = childrenList.str();
+        return children;
+}
+
 
 //////////////////////////////////////////////////////////////
 // NodeQP addPredicate definition
@@ -127,12 +175,6 @@ vector<string> NodeQP::getPredicates (void)
 {
 }
 
-//////////////////////////////////////////////////////////////
-// NodeQP getPredicates function definition
-//////////////////////////////////////////////////////////////
-vector<int> NodeQP::getChildren (void)
-{
-}
 //////////////////////////////////////////////////////////////
 // logMsgT function definition
 //////////////////////////////////////////////////////////////
