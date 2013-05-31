@@ -29,6 +29,9 @@ int main ()
 
         // Show List of Nodes
         queryPlan.showNodeList();
+        vector<string> predList;
+        predList = queryPlan.getPredicatesNode(0);
+       // queryPlan.showPredicatesNode(predList);
 
         // Adding definition for predicate nodes
 

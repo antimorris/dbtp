@@ -102,7 +102,44 @@ void PredicateData::showFullRegistry(void)
         logMsgT(__func__,msg.str(),2,LOGFILE);
 }
 
-
+//////////////////////////////////////////////////////////////
+// QP showPredicateNode function definition
+//////////////////////////////////////////////////////////////
+void QueryPlan::showPredicatesNode(vector<string> rpnode)
+{
+        stringstream msg;
+        msg << "\n\t\tNODE Predicates";
+        msg << "\n\t\t---------------";
+        for (unsigned i=0; i<=rpnode.size(); i++)
+        {
+                msg << "\n\t\t" << rpnode[i];
+        }
+}
+//////////////////////////////////////////////////////////////
+// QP getPredicateNode function definition
+//////////////////////////////////////////////////////////////
+vector<string> QueryPlan::getPredicatesNode(int rnid)
+{
+        NodeQP* node;
+        node = &nodeList[rnid];
+        stringstream msg;
+        vector<string> predicates, predicatesChild;
+        msg << "\n\t\tChecking Node ID (" << rnid << ") Type (" << node->nodeType << ") --";
+        logMsgT(__func__,msg.str(),2,LOGFILE);
+        if (node->nodeType.compare("P") == 0)
+        {
+                //predicates.push_back(node->nodeDefinition);
+                msg << "\n\t\tAdded From ID: (" << rnid << ") ChildID (" ;
+                msg << node->nodeDefinition << ")" ;
+                logMsgT(__func__,msg.str(),2,LOGFILE);
+        }
+        for(unsigned i=0; i<node->nodeChildren.size(); i++)
+        {
+                predicatesChild = getPredicatesNode(node->nodeChildren[i]);
+                predicates.insert (predicatesChild.end(),predicatesChild.begin(),predicatesChild.end());
+        }
+        return predicates;
+}
 //////////////////////////////////////////////////////////////
 // QP Constructor definition
 //////////////////////////////////////////////////////////////
@@ -117,7 +154,7 @@ void QueryPlan::addNode (int rnid, int rpid, string rtype, string rdef)
 	msg << "Adding new NodeQP with ID (" << rnid << ") and PID (" << rpid << ") and TYPE (" << rtype << ")";
 	logMsgT(__func__,msg.str(),2,LOGFILE);
 	nodeList.insert(pair<int,NodeQP>(rnid,node));
-	if (rpid == 0)
+	if (rnid == 0)
 	{
 	        //cout << "PID 0. Main node " << endl;
 	}
