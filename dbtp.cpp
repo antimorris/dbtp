@@ -30,12 +30,16 @@ void PredicateList::addPredicate(string rpred)
 //////////////////////////////////////////////////////////////
 void PredicateList::showFullRegistry(void)
 {
-        cout << "PREDICATE LIST" << endl << endl;
+        stringstream msg;
+        msg << "\n\t\t\tPREDICATE LIST";
+        msg << "\n\t\t\t--------------";
         for (map<int,string>::const_iterator it=pList.begin(); it!=pList.end(); ++it)
         {
                 stringstream predFound;
-                cout << it->first << " => " << it->second << '\n';
+                msg << "\n\t\t\t" << it->first << " => " << it->second ;
         }
+        msg << endl;
+        logMsgT(__func__, msg.str() ,2,LOGFILE);
 }
 
 
@@ -83,15 +87,18 @@ string PredicateData::checkPredicate (int key)
 //////////////////////////////////////////////////////////////
 void PredicateData::showFullRegistry(void)
 {
-        cout << endl << "AIP REGISTRY" << endl;
+        stringstream msg;
+        msg << "\n\t\t\tAIP REGISTRY";
+        msg << "\n\t\t\t------------";
         for (map<int,PredicateStruct>::const_iterator it=registry.begin(); it!=registry.end(); ++it)
         {
                 stringstream predFound;
                 //predFound << it->second.predLoc_ << "-" << it->second.predKey_ << "-" << it->second.predDef_;
                 predFound << it->second.getPredLoc() << "-" << it->second.getPredKey() << "-" << it->second.getPredDef();
-                cout << it->first << " => " << predFound.str() << '\n';
+                msg << "\n\t\t\t" << it->first << " => " << predFound.str();
         }
-        cout << "-------------" << endl << endl;
+        msg << endl;
+        logMsgT(__func__,msg.str(),2,LOGFILE);
 }
 
 
@@ -111,13 +118,13 @@ void NodeQP::addNode (int rpid, char rtype)
 	nodeList.insert(pair<int,NodeQP>(newId,node));
 	if (rpid == 0)
 	{
-	        cout << "PID 0. Main node " << endl;
+	        //cout << "PID 0. Main node " << endl;
 	}
 	else
 	{
 	        nodeTmp = &nodeList[rpid];
 	        nodeTmp->nodeChildren.push_back(newId);
-                cout << "Reading info for ID: " << rpid << " PARENT: " << nodeTmp->nodeParent << "- " << nodeTmp->nodeType << "- " << nodeTmp->getChildren() << endl;
+                //cout << "Reading info for ID: " << rpid << " PARENT: " << nodeTmp->nodeParent << "- " << nodeTmp->nodeType << "- " << nodeTmp->getChildren() << endl;
 	}
 
 }
@@ -135,14 +142,17 @@ void NodeQP::initialize(void)
 //////////////////////////////////////////////////////////////
 void NodeQP::showNodeList (void)
 {
-        cout << endl << "NODE LIST" << endl;
+        stringstream msg;
+        msg << "\n\t\t\tNODE LIST";
+        msg << "\n\t\t\t---------";
         for (map<int,NodeQP>::const_iterator it=nodeList.begin(); it!=nodeList.end(); ++it)
         {
                 stringstream nodeFound;
                 nodeFound << "ID: " << it->first << " TYPE: " << it->second.nodeType << " CHILDREN: " << it->second.getChildren() ;
-                cout << nodeFound.str() << '\n';
+                msg << "\n\t\t\t" << nodeFound.str();
         }
-        cout << "-------------" << endl << endl;
+        msg << endl;
+        logMsgT(__func__, msg.str() ,2,LOGFILE);
 }
 
 //////////////////////////////////////////////////////////////
@@ -164,16 +174,16 @@ string NodeQP::getChildren (void) const
 //////////////////////////////////////////////////////////////
 // NodeQP addPredicate definition
 //////////////////////////////////////////////////////////////
-void NodeQP::addPredicate (int rnid, string rpredicate)
+void NodeQP::addDefinition (int rnid, string rdef)
 {
         stringstream msg;
         NodeQP* node;
         node = &nodeList[rnid];
-        node->nodeDefinition = rpredicate;
-        msg << "Adding predicate : (" << rpredicate << ") to NODE: " << rnid ;
+        node->nodeDefinition = rdef;
+        msg << "Adding definition (" << rdef << ") to NODE: (" << rnid <<")" ;
         logMsgT(__func__, msg.str() ,2,LOGFILE);
-
 }
+
 //////////////////////////////////////////////////////////////
 // NodeQP getAttributes function definition
 //////////////////////////////////////////////////////////////
@@ -189,6 +199,24 @@ vector<string> NodeQP::getAttributes (int rnid)
                 predList.push_back(p);
         }
         return predList;
+}
+
+//////////////////////////////////////////////////////////////
+// NodeQP getAttributes function definition
+//////////////////////////////////////////////////////////////
+void NodeQP::showAttributes (int rnid)
+{
+        NodeQP* node;
+        node = &nodeList[rnid];
+        istringstream predicateF(node->nodeDefinition);
+        string p;
+        stringstream msg;
+        msg << "Attributes for Node (" << rnid << "): ";
+        while (getline(predicateF, p, ','))
+        {
+                msg << p << ", ";
+        }
+        logMsgT(__func__, msg.str() ,2,LOGFILE);
 }
 
 //////////////////////////////////////////////////////////////
@@ -211,7 +239,7 @@ void logMsgT (string function_name, string msg_data, int msg_code, string logfil
         myfile << "[" << msg_timestamp << "] [" << msg_prefix << "] ["
          << function_name << "] [" << msg_data << "]" << endl;
         cout << "[" << msg_timestamp << "] [" << msg_prefix << "] ["
-         << function_name << "] [" << msg_data << "]" << endl;
+         << function_name << "] --> " << msg_data << endl;
         myfile.close();
 }
 //////////////////////////////////////////////////////////////

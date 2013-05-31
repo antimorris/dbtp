@@ -28,7 +28,8 @@ class NodeQP
 	string getChildren (void) const;
 	string getPredicate (void) const;
 	vector<string>	getAttributes (int);
-	void addPredicate (int, string);
+	void showAttributes (int);
+	void addDefinition (int, string);
 	void addNode (int, char);
         void initialize (void);
         void showNodeList (void);
