@@ -8,7 +8,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <vector>
-#include <String.h>
+#include <string.h>
 #include <fstream>
 #include <sstream>
 #include <stdlib.h>

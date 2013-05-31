@@ -32,12 +32,12 @@ void PredicateList::addPredicate(string rpred)
 void PredicateList::showFullRegistry(void)
 {
         stringstream msg;
-        msg << "\n\t\t\tPREDICATE LIST";
-        msg << "\n\t\t\t--------------";
+        msg << "\n\t\t\t\tPREDICATE LIST";
+        msg << "\n\t\t\t\t--------------";
         for (map<int,string>::const_iterator it=pList.begin(); it!=pList.end(); ++it)
         {
                 stringstream predFound;
-                msg << "\n\t\t\t" << it->first << " => " << it->second ;
+                msg << "\n\t\t\t\t" << it->first << " => " << it->second ;
         }
         msg << endl;
         logMsgT(__func__, msg.str() ,2,LOGFILE);
@@ -89,14 +89,14 @@ string PredicateData::checkPredicate (int key)
 void PredicateData::showFullRegistry(void)
 {
         stringstream msg;
-        msg << "\n\t\t\tAIP REGISTRY";
-        msg << "\n\t\t\t------------";
+        msg << "\n\t\t\t\tAIP REGISTRY";
+        msg << "\n\t\t\t\t------------";
         for (map<int,PredicateStruct>::const_iterator it=registry.begin(); it!=registry.end(); ++it)
         {
                 stringstream predFound;
                 //predFound << it->second.predLoc_ << "-" << it->second.predKey_ << "-" << it->second.predDef_;
                 predFound << it->second.getPredLoc() << "-" << it->second.getPredKey() << "-" << it->second.getPredDef();
-                msg << "\n\t\t\t" << it->first << " => " << predFound.str();
+                msg << "\n\t\t\t\t" << it->first << " => " << predFound.str();
         }
         msg << endl;
         logMsgT(__func__,msg.str(),2,LOGFILE);
@@ -108,11 +108,11 @@ void PredicateData::showFullRegistry(void)
 void QueryPlan::showVector(string title, vector<string> rpnode)
 {
         stringstream msg;
-        msg << "\n\t\t" << title;
-        msg << "\n\t\t---------------";
+        msg << "\n\t\t\t\t" << title;
+        msg << "\n\t\t\t\t---------------";
         for (unsigned i=0; i<rpnode.size(); i++)
         {
-                msg << "\n\t\t-->" << rpnode[i];
+                msg << "\n\t\t\t\t\t-->" << rpnode[i];
         }
         msg << endl;
         logMsgT(__func__,msg.str(),2,LOGFILE);
@@ -127,11 +127,11 @@ vector<string> QueryPlan::getPredicatesNode(int rnid)
         node = &nodeList[rnid];
         stringstream msg;
         vector<string> predicates, predicatesChild;
-        msg << "\n\t\tChecking Node ID (" << rnid << ") Type (" << node->nodeType << ")";
+        msg << "\n\t\t\t\tChecking Node ID (" << rnid << ") Type (" << node->nodeType << ")";
         if (node->nodeType.compare("P") == 0)
         {
                 predicates.push_back(node->nodeDefinition);
-                msg << "\n\t\t\tAdded From ID (" << rnid << ") P (" ;
+                msg << "\n\t\t\t\tAdded From ID (" << rnid << ") P (" ;
                 msg << node->nodeDefinition << ")" ;
         }
         for(unsigned i=0; i<node->nodeChildren.size(); i++)
@@ -154,13 +154,13 @@ vector<string> QueryPlan::getPredicatesOver(vector<string> rattrib)
 
         for(unsigned i=0; i<rattrib.size(); i++)
         {
-                msg << "\n\t\tChecking A (" << rattrib[i] << ") on GPL";
+                msg << "\n\t\t\t\tChecking A (" << rattrib[i] << ") on GPL";
                 for (it=generalPredicateList.pList.begin(); it!=generalPredicateList.pList.end(); ++it)
                 {
                         if(it->second.find(rattrib[i]) != std::string::npos)
                         {
                                 predicatesOver.push_back(it->second);
-                                msg << "\n\t\t\t Found A on GPL - Predicated (" << it->second << ") Added to POA List" ;
+                                msg << "\n\t\t\t\t\t Found A on GPL - Predicated (" << it->second << ") Added to POA List" ;
                         }
                 }
         }
@@ -203,13 +203,13 @@ void QueryPlan::addNode (int rnid, int rpid, string rtype, string rdef)
 void QueryPlan::showNodeList (void)
 {
         stringstream msg;
-        msg << "\n\t\t\tNODE LIST";
-        msg << "\n\t\t\t---------";
+        msg << "\n\t\t\t\tNODE LIST";
+        msg << "\n\t\t\t\t---------";
         for (map<int,NodeQP>::const_iterator it=nodeList.begin(); it!=nodeList.end(); ++it)
         {
                 stringstream nodeFound;
                 nodeFound << "ID: " << it->first << " TYPE: " << it->second.nodeType << " CHILDREN: " << showChildren(it->first) ;
-                msg << "\n\t\t\t" << nodeFound.str();
+                msg << "\n\t\t\t\t" << nodeFound.str();
         }
         msg << endl;
         logMsgT(__func__, msg.str() ,2,LOGFILE);
@@ -226,12 +226,12 @@ void QueryPlan::createPredLists (void)
                 if (it->second.nodeType.compare("P") == 0)
                 {
                         generalPredicateList.addPredicate(it->second.nodeDefinition);
-                        msg << "\n\t\tAdded predicate to GPL - Node: (" << it->first;
+                        msg << "\n\t\t\t\tAdded predicate to GPL - Node: (" << it->first;
                         msg << ") TYPE: (" << it->second.nodeType << ") P: (" << it->second.nodeDefinition << ")" ;
                         if (it->second.nodeDefinition.find("AND") != std::string::npos)
                         {
                                 conjPredicateList.addPredicate(it->second.nodeDefinition);
-                                msg << "\n\t\tAdded predicate to CPL - Node: (" << it->first;
+                                msg << "\n\t\t\t\tAdded predicate to CPL - Node: (" << it->first;
                                 msg << ") TYPE: (" << it->second.nodeType << ") P: (" << it->second.nodeDefinition << ")" ;
                         }
                 }
@@ -283,8 +283,7 @@ vector<string> QueryPlan::getAttributes (int rnid)
         istringstream predicateF(node->nodeDefinition);
         vector<string> attribList, attribListChild;
 
-        msg << "\n\t\tChecking Node ID (" << rnid << ") Type (" << node->nodeType << ")";
-        logMsgT(__func__,msg.str(),2,LOGFILE);
+        msg << "\n\t\t\t\tChecking Node ID (" << rnid << ") Type (" << node->nodeType << ")";
         if (node->nodeType.compare("P") == 0)
         {
                 while (getline(predicateF, p, ','))
@@ -292,9 +291,8 @@ vector<string> QueryPlan::getAttributes (int rnid)
                         if (p.compare("<") != 0 and p.compare(">") != 0 and p.compare("AND") != 0)
                         {
                                 attribList.push_back(p);
-                                msg << "\n\t\t\tAdded ATTRIB From ID (" << rnid << ") A (" ;
+                                msg << "\n\t\t\t\t\tAdded ATTRIB From ID (" << rnid << ") A (" ;
                                 msg << p << ")" ;
-                                logMsgT(__func__,msg.str(),2,LOGFILE);
                         }
                 }
         }
@@ -303,6 +301,7 @@ vector<string> QueryPlan::getAttributes (int rnid)
                 attribListChild = getAttributes(node->nodeChildren[i]);
                 attribList.insert (attribList.end(),attribListChild.begin(),attribListChild.end());
         }
+        logMsgT(__func__,msg.str(),2,LOGFILE);
         return attribList;
 }
 

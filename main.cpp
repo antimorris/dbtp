@@ -11,6 +11,7 @@ int main ()
     //*****************************************
     //Create and load the initial database
     //*****************************************
+    /*
         table BL2013_F;
         table BL2013_F1599;
         table BL2013_F2599;
@@ -28,7 +29,7 @@ int main ()
         table test = JOIN(BL2013_F1599,BL2013_MF,"year");
         cout<<test.tuples.size()<<endl;
 
-
+*/
 
 	// *************************************
         // Creation of Query Plan for Example 1
