@@ -48,12 +48,11 @@ class QueryPlan
 	string showChildren (int);
 	string getPredicate (void) const;
 	vector<string>	getAttributes (int);
-	void showAttributes (int);
 	void addDefinition (int, string);
 	void createPredLists (void);
 	vector<string> getPredicatesNode(int);
-	vector<string> getPredicatesOver(vector<int>);
-	void showPredicatesNode(vector<string>);
+	vector<string> getPredicatesOver(vector<string>);
+	void showVector(string, vector<string>);
 	void addNode (int, int, string,string);
         void initialize (void);
         void showNodeList (void);

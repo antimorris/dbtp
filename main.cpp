@@ -30,12 +30,20 @@ int main ()
         // Show List of Nodes
         queryPlan.showNodeList();
         vector<string> predList;
-        predList = queryPlan.getPredicatesNode(0);
-       // queryPlan.showPredicatesNode(predList);
+        predList = queryPlan.getPredicatesNode(11);
+        queryPlan.showVector("NODE PREDICATES", predList);
+
+        vector<string> att, poa;
+        att = queryPlan.getAttributes(3);
+        queryPlan.showVector("NODE ATTRIBUTES", att);
+
+        poa = queryPlan.getPredicatesOver(att);
+        queryPlan.showVector("PRED OVER ATT(3)",poa);
+
 
         // Adding definition for predicate nodes
 
-
+/*
         // TEST for AIP Registry
 	PredicateData aipRegistry;
 	//aipRegistry.checkPredicate(0);
@@ -46,10 +54,8 @@ int main ()
         aipRegistry.showFullRegistry();
 
         aipRegistry.checkPredicate(1);
+*/
 
-        vector<string> att;
-        att = queryPlan.getAttributes(2);
-        queryPlan.showAttributes(2);
 
 	exit(0);
 }
