@@ -7,6 +7,7 @@
 #include <fstream>
 #include <pthread.h>
 #include <stdio.h>
+#include <string.h>
 #include "dbtp.h"
 using namespace std;
 
@@ -103,19 +104,19 @@ void PredicateData::showFullRegistry(void)
 
 
 //////////////////////////////////////////////////////////////
-// NodeQP Constructor definition
+// QP Constructor definition
 //////////////////////////////////////////////////////////////
-void NodeQP::addNode (int rpid, char rtype)
+void QueryPlan::addNode (int rnid, int rpid, string rtype, string rdef)
 {
 	stringstream msg;
 	NodeQP node;
 	NodeQP* nodeTmp;
-	node.nodeType = rtype;
+	node.nodeType   = rtype;
 	node.nodeParent = rpid;
-	int newId = nodeList.size() + 1;
-	msg << "Adding new NodeQP with ID (" << newId << ") and PID (" << rpid << ") and TYPE (" << rtype << ")";
+	node.nodeDefinition = rdef;
+	msg << "Adding new NodeQP with ID (" << rnid << ") and PID (" << rpid << ") and TYPE (" << rtype << ")";
 	logMsgT(__func__,msg.str(),2,LOGFILE);
-	nodeList.insert(pair<int,NodeQP>(newId,node));
+	nodeList.insert(pair<int,NodeQP>(rnid,node));
 	if (rpid == 0)
 	{
 	        //cout << "PID 0. Main node " << endl;
@@ -123,24 +124,17 @@ void NodeQP::addNode (int rpid, char rtype)
 	else
 	{
 	        nodeTmp = &nodeList[rpid];
-	        nodeTmp->nodeChildren.push_back(newId);
+	        nodeTmp->nodeChildren.push_back(rnid);
                 //cout << "Reading info for ID: " << rpid << " PARENT: " << nodeTmp->nodeParent << "- " << nodeTmp->nodeType << "- " << nodeTmp->getChildren() << endl;
 	}
 
 }
 
-//////////////////////////////////////////////////////////////
-// NodeQP initialize function definition
-//////////////////////////////////////////////////////////////
-void NodeQP::initialize(void)
-{
-        addNode(0,'M');
-};
 
 //////////////////////////////////////////////////////////////
-// NodeQP ShowNodeList definition
+// QP ShowNodeList definition
 //////////////////////////////////////////////////////////////
-void NodeQP::showNodeList (void)
+void QueryPlan::showNodeList (void)
 {
         stringstream msg;
         msg << "\n\t\t\tNODE LIST";
@@ -148,7 +142,7 @@ void NodeQP::showNodeList (void)
         for (map<int,NodeQP>::const_iterator it=nodeList.begin(); it!=nodeList.end(); ++it)
         {
                 stringstream nodeFound;
-                nodeFound << "ID: " << it->first << " TYPE: " << it->second.nodeType << " CHILDREN: " << it->second.getChildren() ;
+                nodeFound << "ID: " << it->first << " TYPE: " << it->second.nodeType << " CHILDREN: " << showChildren(it->first) ;
                 msg << "\n\t\t\t" << nodeFound.str();
         }
         msg << endl;
@@ -156,25 +150,52 @@ void NodeQP::showNodeList (void)
 }
 
 //////////////////////////////////////////////////////////////
-// NodeQP getChildren function definition
+// QP createPredLists definition
 //////////////////////////////////////////////////////////////
-string NodeQP::getChildren (void) const
+void QueryPlan::createPredLists (void)
 {
+        stringstream msg;
+        for (map<int,NodeQP>::const_iterator it=nodeList.begin(); it!=nodeList.end(); ++it)
+        {
+                if (it->second.nodeType.compare("P") == 0)
+                {
+                        generalPredicateList.addPredicate(it->second.nodeDefinition);
+                        msg << "\n\t\tAdded predicate to GPL - Node: (" << it->first;
+                        msg << ") TYPE: (" << it->second.nodeType << ") P: (" << it->second.nodeDefinition << ")" ;
+                        if (it->second.nodeDefinition.find("AND") != std::string::npos)
+                        {
+                                conjPredicateList.addPredicate(it->second.nodeDefinition);
+                                msg << "\n\t\tAdded predicate to CPL - Node: (" << it->first;
+                                msg << ") TYPE: (" << it->second.nodeType << ") P: (" << it->second.nodeDefinition << ")" ;
+                        }
+                }
+        }
+        msg << endl;
+        logMsgT(__func__, msg.str() ,2,LOGFILE);
+}
+
+
+//////////////////////////////////////////////////////////////
+// QP showChildren function definition
+//////////////////////////////////////////////////////////////
+string QueryPlan::showChildren (int rpid)
+{
+        NodeQP* nodeTmp;
+        nodeTmp = &nodeList[rpid];
         stringstream childrenList;
         string children;
-        for (unsigned i=0; i<nodeChildren.size(); i++)
+        for (unsigned i=0; i<nodeTmp->nodeChildren.size(); i++)
         {
-                childrenList << nodeChildren.at(i) << ",";
+                childrenList << nodeTmp->nodeChildren.at(i) << ",";
         }
         children = childrenList.str();
         return children;
 }
 
-
 //////////////////////////////////////////////////////////////
-// NodeQP addPredicate definition
+// QP addPredicate definition
 //////////////////////////////////////////////////////////////
-void NodeQP::addDefinition (int rnid, string rdef)
+void QueryPlan::addDefinition (int rnid, string rdef)
 {
         stringstream msg;
         NodeQP* node;
@@ -185,9 +206,9 @@ void NodeQP::addDefinition (int rnid, string rdef)
 }
 
 //////////////////////////////////////////////////////////////
-// NodeQP getAttributes function definition
+// QP getAttributes function definition
 //////////////////////////////////////////////////////////////
-vector<string> NodeQP::getAttributes (int rnid)
+vector<string> QueryPlan::getAttributes (int rnid)
 {
         NodeQP* node;
         node = &nodeList[rnid];
@@ -202,9 +223,9 @@ vector<string> NodeQP::getAttributes (int rnid)
 }
 
 //////////////////////////////////////////////////////////////
-// NodeQP getAttributes function definition
+// QP getAttributes function definition
 //////////////////////////////////////////////////////////////
-void NodeQP::showAttributes (int rnid)
+void QueryPlan::showAttributes (int rnid)
 {
         NodeQP* node;
         node = &nodeList[rnid];

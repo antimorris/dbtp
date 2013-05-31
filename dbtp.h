@@ -20,17 +20,38 @@ void logMsgT (string function_name, string msg_data, int msg_code, string logfil
 class NodeQP
 {
 	public:
-	char nodeType;
 	int nodeParent;
+	string nodeType;
 	string nodeDefinition;
 	vector<int> nodeChildren;
-	map<int,NodeQP> nodeList;
-	string getChildren (void) const;
+};
+
+//////////////////////////////////////////////////////////////
+// PredicateList Class definition
+//////////////////////////////////////////////////////////////
+class PredicateList
+{
+        public:
+        map<int,string> pList;
+        void addPredicate (string predicate);
+        void showFullRegistry(void);
+};
+
+//////////////////////////////////////////////////////////////
+// QP Class definition
+//////////////////////////////////////////////////////////////
+class QueryPlan
+{
+        public:
+        map<int,NodeQP> nodeList;
+        PredicateList conjPredicateList, generalPredicateList;
+	string showChildren (int);
 	string getPredicate (void) const;
 	vector<string>	getAttributes (int);
 	void showAttributes (int);
 	void addDefinition (int, string);
-	void addNode (int, char);
+	void createPredLists (void);
+	void addNode (int, int, string,string);
         void initialize (void);
         void showNodeList (void);
 };
@@ -57,16 +78,4 @@ class PredicateData
         void showFullRegistry (void);
 };
 
-//////////////////////////////////////////////////////////////
-// PredicateList Class definition
-//////////////////////////////////////////////////////////////
-class PredicateList
-{
-        public:
-        //int predID;
-        //string predDef;
-        map<int,string> pList;
-        //string getPredDef (void) {return predDef;}
-        void addPredicate (string predicate);
-        void showFullRegistry(void);
-};
+
