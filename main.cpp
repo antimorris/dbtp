@@ -1,5 +1,6 @@
 #include <iostream>
 #include "dbtp.h"
+#include "Tables.h"
 using namespace std;
 
 //////////////////////////////////////////////////////////////
@@ -7,6 +8,28 @@ using namespace std;
 //////////////////////////////////////////////////////////////
 int main ()
 {
+    //*****************************************
+    //Create and load the initial database
+    //*****************************************
+        table BL2013_F;
+        table BL2013_F1599;
+        table BL2013_F2599;
+        table BL2013_MF;
+        table BL2013_MF1599;
+        table BL2013_MF2599;
+
+        loadTable("Education/BL2013_F.csv", &BL2013_F);
+        loadTable("Education/BL2013_F1599.csv", &BL2013_F1599);
+        loadTable("Education/BL2013_F2599.csv", &BL2013_F2599);
+        loadTable("Education/BL2013_MF.csv", &BL2013_MF);
+        loadTable("Education/BL2013_MF1599.csv", &BL2013_MF1599);
+        loadTable("Education/BL2013_MF2599.csv", &BL2013_MF2599);
+
+        table test = JOIN(BL2013_F1599,BL2013_MF,"year");
+        cout<<test.tuples.size()<<endl;
+
+
+
 	// *************************************
         // Creation of Query Plan for Example 1
         // *************************************
