@@ -52,6 +52,7 @@ class QueryPlan
 	void createPredLists (void);
 	vector<string> getPredicatesNode(int);
 	vector<string> getPredicatesOver(vector<string>);
+	vector<string> subtractLists(vector<string>, vector<string>);
 	void showVector(string, vector<string>);
 	void addNode (int, int, string,string);
         void initialize (void);

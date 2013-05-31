@@ -64,7 +64,21 @@ int main ()
         poa = queryPlan.getPredicatesOver(att);
         queryPlan.showVector("PRED OVER ATT(3)",poa);
 
+        vector<string> aaa,bbb,ccc;
+        aaa.push_back("aaa");
+        aaa.push_back("bbb");
+        aaa.push_back("ccc");
+        aaa.push_back("ddd");
+        aaa.push_back("eee");
+        aaa.push_back("fff");
+        aaa.push_back("ggg");
 
+        bbb.push_back("aaa");
+        bbb.push_back("aaa");
+        bbb.push_back("ddd");
+        bbb.push_back("fff");
+        ccc = queryPlan.subtractLists(aaa,bbb);
+        queryPlan.showVector("SUBTRACT LIST",ccc);
         // Adding definition for predicate nodes
 
 /*

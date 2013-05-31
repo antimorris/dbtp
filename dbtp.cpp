@@ -5,6 +5,7 @@
 #include <map>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
@@ -168,6 +169,22 @@ vector<string> QueryPlan::getPredicatesOver(vector<string> rattrib)
         return predicatesOver;
 }
 
+//////////////////////////////////////////////////////////////
+// QP subtractLists function definition
+//////////////////////////////////////////////////////////////
+vector<string> QueryPlan::subtractLists(vector<string> ra, vector<string> rb)
+{
+        string* a = &ra[0];
+        string* b = &rb[0];
+        vector<string> sub(ra.size()+rb.size());
+        vector<string>::iterator it;
+        sort (a,a+ra.size());
+        sort (b,b+rb.size());
+        it=set_difference (a, a+ra.size(), b, b+rb.size(), sub.begin());
+        sub.resize(it-sub.begin());
+        cout << "The difference has " << (sub.size()) << " elements:\n";
+        return sub;
+}
 
 //////////////////////////////////////////////////////////////
 // QP Constructor definition
