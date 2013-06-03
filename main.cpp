@@ -46,12 +46,16 @@ int main ()
         queryPlan.addNode(7,0,"P","10*avail,<,numsold");
         queryPlan.addNode(8,7,"O-JOIN","partkey");
         queryPlan.addNode(9,8,"Y","SUM(availqty) as avail partkey");
-        queryPlan.addNode(10,9,"T","PS2");
+        queryPlan.addNode(10,9,"P","retailprice,<,OTHER");
         queryPlan.addNode(11,8,"Y","SUM(availqty) as numsold partkey");
         queryPlan.addNode(12,11,"P","receiptdate,>,2007-1-1,AND,OTHER");
         queryPlan.addNode(13,12,"T","L");
         queryPlan.createPredLists();
-
+        //queryPlan.showMapSources();
+        queryPlan.createSources();
+        queryPlan.showMapSources();
+        cout << "OTHERRRRR: " << queryPlan.sources.at("OTHER");
+/*
         // Show List of Nodes
         queryPlan.showNodeList();
         vector<string> predList;
@@ -85,6 +89,7 @@ int main ()
         queryPlan.showVector("INTERSECT LIST",ddd);
 
         // Adding definition for predicate nodes
+*/
 
 /*
         // TEST for AIP Registry

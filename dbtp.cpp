@@ -19,28 +19,9 @@ using namespace std;
 //////////////////////////////////////////////////////////////
 void PredicateList::addPredicate(string rpred)
 {
-        int newId = pList.size()+1;
-        pList.insert(pair<int,string>(newId,rpred));
+        pList.push_back(rpred);
         stringstream msg;
         msg << "Adding Predicate (" << rpred << ") to PredicateList";
-        logMsgT(__func__, msg.str() ,2,LOGFILE);
-}
-
-
-//////////////////////////////////////////////////////////////
-// PredicateList::getPredicate definition
-//////////////////////////////////////////////////////////////
-void PredicateList::showFullRegistry(void)
-{
-        stringstream msg;
-        msg << "\n\t\t\tPREDICATE LIST";
-        msg << "\n\t\t\t--------------";
-        for (map<int,string>::const_iterator it=pList.begin(); it!=pList.end(); ++it)
-        {
-                stringstream predFound;
-                msg << "\n\t\t\t" << it->first << " => " << it->second ;
-        }
-        msg << endl;
         logMsgT(__func__, msg.str() ,2,LOGFILE);
 }
 
@@ -129,18 +110,21 @@ vector<string> QueryPlan::getPredicatesNode(int rnid)
         stringstream msg;
         vector<string> predicates, predicatesChild;
         msg << "\n\t\t\tChecking Node ID (" << rnid << ") Type (" << node->nodeType << ")";
+        logMsgT(__func__,msg.str(),2,LOGFILE);
+        msg.str("");
         if (node->nodeType.compare("P") == 0)
         {
                 predicates.push_back(node->nodeDefinition);
                 msg << "\n\t\t\tAdded From ID (" << rnid << ") P (" ;
                 msg << node->nodeDefinition << ")" ;
+                logMsgT(__func__,msg.str(),2,LOGFILE);
+                msg.str("");
         }
         for(unsigned i=0; i<node->nodeChildren.size(); i++)
         {
                 predicatesChild = getPredicatesNode(node->nodeChildren[i]);
                 predicates.insert (predicates.end(),predicatesChild.begin(),predicatesChild.end());
         }
-        logMsgT(__func__,msg.str(),2,LOGFILE);
         return predicates;
 }
 
@@ -151,19 +135,17 @@ vector<string> QueryPlan::getPredicatesOver(vector<string> rattrib)
 {
         stringstream msg;
         vector<string> predicatesOver;
-        map<int,string>::iterator it;
-
         for(unsigned i=0; i<rattrib.size(); i++)
         {
                 msg << "\n\t\t\tChecking A (" << rattrib[i] << ") on GPL";
-                for (it=generalPredicateList.pList.begin(); it!=generalPredicateList.pList.end(); ++it)
+                for (unsigned j=0; j<generalPredicateList.pList.size(); j++)
                 {
-                        if(it->second.find(rattrib[i]) != std::string::npos)
+                        if(find(generalPredicateList.pList.begin(),generalPredicateList.pList.end(),rattrib[i]) == generalPredicateList.pList.end())
                         {
-                                if(find(predicatesOver.begin(), predicatesOver.end(), it->second)==predicatesOver.end())
+                                if(find(predicatesOver.begin(), predicatesOver.end(), generalPredicateList.pList[i])==predicatesOver.end())
                                 {
-                                        predicatesOver.push_back(it->second);
-                                        msg << "\n\t\t\t\t Found A on GPL - Predicated (" << it->second << ") Added to POA List" ;
+                                        predicatesOver.push_back(generalPredicateList.pList[i]);
+                                        msg << "\n\t\t\t\t Found A on GPL - Predicate (" << generalPredicateList.pList[i] << ") Added to POA List" ;
                                 }
                         }
                 }
@@ -205,6 +187,22 @@ vector<string> QueryPlan::intersectLists(vector<string> ra, vector<string> rb)
 }
 
 //////////////////////////////////////////////////////////////
+// QP unionLists function definition
+//////////////////////////////////////////////////////////////
+vector<string> QueryPlan::unionLists(vector<string> ra, vector<string> rb)
+{
+        string* a = &ra[0];
+        string* b = &rb[0];
+        vector<string> sub(ra.size()+rb.size());
+        vector<string>::iterator it;
+        sort (a,a+ra.size());
+        sort (b,b+rb.size());
+        it=set_union (a, a+ra.size(), b, b+rb.size(), sub.begin());
+        sub.resize(it-sub.begin());
+        return sub;
+}
+
+//////////////////////////////////////////////////////////////
 // QP Constructor definition
 //////////////////////////////////////////////////////////////
 void QueryPlan::addNode (int rnid, int rpid, string rtype, string rdef)
@@ -215,7 +213,7 @@ void QueryPlan::addNode (int rnid, int rpid, string rtype, string rdef)
 	node.nodeType   = rtype;
 	node.nodeParent = rpid;
 	node.nodeDefinition = rdef;
-	msg << "Adding new NodeQP with ID (" << rnid << ") and PID (" << rpid << ") and TYPE (" << rtype << ")";
+	msg << "Ned Node:ID (" << rnid << ") PID (" << rpid << ") TYPE (" << rtype << ") DEF (" << rdef << ")";
 	logMsgT(__func__,msg.str(),2,LOGFILE);
 	nodeList.insert(pair<int,NodeQP>(rnid,node));
 	if (rnid == 0)
@@ -254,6 +252,9 @@ void QueryPlan::showNodeList (void)
 void QueryPlan::createPredLists (void)
 {
         stringstream msg;
+        msg << "Creating Predicate List: GPL and CPL";
+        logMsgT(__func__, msg.str() ,2,LOGFILE);
+        msg.str("");
         for (map<int,NodeQP>::const_iterator it=nodeList.begin(); it!=nodeList.end(); ++it)
         {
                 if (it->second.nodeType.compare("P") == 0)
@@ -291,19 +292,6 @@ string QueryPlan::showChildren (int rpid)
 }
 
 //////////////////////////////////////////////////////////////
-// QP addPredicate definition
-//////////////////////////////////////////////////////////////
-void QueryPlan::addDefinition (int rnid, string rdef)
-{
-        stringstream msg;
-        NodeQP* node;
-        node = &nodeList[rnid];
-        node->nodeDefinition = rdef;
-        msg << "Adding definition (" << rdef << ") to NODE: (" << rnid <<")" ;
-        logMsgT(__func__, msg.str() ,2,LOGFILE);
-}
-
-//////////////////////////////////////////////////////////////
 // QP getAttributes function definition
 //////////////////////////////////////////////////////////////
 vector<string> QueryPlan::getAttributes (int rnid)
@@ -314,7 +302,6 @@ vector<string> QueryPlan::getAttributes (int rnid)
         string p;
         istringstream predicateF(node->nodeDefinition);
         vector<string> attribList, attribListChild;
-
         msg << "\n\t\t\tChecking Node ID (" << rnid << ") Type (" << node->nodeType << ")";
         if (node->nodeType.compare("P") == 0)
         {
@@ -328,35 +315,132 @@ vector<string> QueryPlan::getAttributes (int rnid)
                         }
                 }
         }
+        logMsgT(__func__,msg.str(),2,LOGFILE);
+        msg.str("");
         for(unsigned i=0; i<node->nodeChildren.size(); i++)
         {
                 attribListChild = getAttributes(node->nodeChildren[i]);
                 attribList.insert (attribList.end(),attribListChild.begin(),attribListChild.end());
         }
-        logMsgT(__func__,msg.str(),2,LOGFILE);
         return attribList;
 }
 
 //////////////////////////////////////////////////////////////
+// QP getAttributes function definition
+//////////////////////////////////////////////////////////////
+vector<string> QueryPlan::getAttributes (string rdef)
+{
+        stringstream msg;
+        string p;
+        istringstream predicateF(rdef);
+        vector<string> attribList;
+        msg << "\n\t\t\tChecking A (" << rdef << ") to extract attributes";
+        while (getline(predicateF, p, ','))
+        {
+                if (p.compare("<") != 0 and p.compare(">") != 0 and p.compare("AND") != 0)
+                {
+                        attribList.push_back(p);
+                        msg << "\n\t\t\t\tAdded ATTRIB (" << p << ")" ;
+                }
+        }
+        logMsgT(__func__,msg.str(),2,LOGFILE);
+        return attribList;
+}
+
+
+//////////////////////////////////////////////////////////////
 // logMsgT function definition
 //////////////////////////////////////////////////////////////
-vector<string> Aip (map<int,NodeQP> Q, PredicateList P)
+void QueryPlan::getAip (void)
 {
-        vector<string> aip;
         stringstream msg;
-        for (map<int,NodeQP>::const_iterator n=Q.begin(); n!=Q.end(); ++n)
+        vector<string> predInN, predOverC, predP, attribA, attribC, attribP, aip;
+        for (map<int,NodeQP>::const_iterator n=nodeList.begin(); n!=nodeList.end(); ++n)
         {
-                msg << "Iter Node (" << n->first << ")";
+                msg << "\n\t\tIter Node (" << n->first << ")" << endl;
+                logMsgT(__func__,msg.str(),2,LOGFILE);
+                msg.str("");
                 if (n->second.nodeType.compare("O-JOIN") == 0)
                 {
+                        predInN   = getPredicatesNode(n->first);
                         for(unsigned c=0; c<n->second.nodeChildren.size(); c++)
                         {
-                                msg << "Iter Child (" << n->second.nodeChildren[c] << ")";
-
+                                msg << "\n\t\t\tIter Child (" << n->second.nodeChildren[c] << ")";
+                                logMsgT(__func__,msg.str(),2,LOGFILE);
+                                msg.str("");
+                                attribC = getAttributes(n->second.nodeChildren[c]);
+                                predOverC = getPredicatesOver(attribC);
+                                predP = intersectLists(subtractLists(predOverC,predInN),generalPredicateList.pList);
+                                for(unsigned p=0; p<predP.size(); p++)
+                                {
+                                        attribP = getAttributes(predP[p]);
+                                        attribA = intersectLists(attribP,attribC);
+                                        for(unsigned a=0; a<attribA.size(); a++)
+                                        {
+                                                aip = unionLists(aip,aip);
+                                        }
+                                }
                         }
                 }
         }
-        return aip;
+}
+
+//////////////////////////////////////////////////////////////
+// QueryPlan::createSources function definition
+//////////////////////////////////////////////////////////////
+void QueryPlan::createSources (void)
+{
+        string p;
+        stringstream msg;
+        for (map<int,NodeQP>::const_iterator it=nodeList.begin(); it!=nodeList.end(); ++it)
+        {
+                msg << "\n\t\t\tExtracting Attrib from Node ID (" << it->first << ") Type (" << it->second.nodeType << ")";
+                istringstream predicateF(it->second.nodeDefinition);
+                if (it->second.nodeType.compare("P") == 0)
+                {
+                        while (getline(predicateF, p, ','))
+                        {
+                                if (p.compare("<") != 0 and p.compare(">") != 0 and p.compare("AND") != 0)
+                                {
+                                        stringstream tmpid;
+                                        tmpid << "," << it->first << ",";
+                                        if (sources.find(p) == sources.end())
+                                        {
+                                                stringstream src;
+                                                src << it->first;
+                                                sources.insert(pair<string,string>(p,src.str()));
+                                                msg << "\n\t\t\t\tAdded NEW Source (" << it->first << ") to A (" << p << ")" ;
+                                        }
+                                        else
+                                        {
+                                                stringstream src;
+                                                src << sources.at(p) << "," << it->first;
+                                                sources[p] = src.str() ;
+                                                msg << "\n\t\t\t\tAdded Source (" << it->first << ") to A (" << p << ") UPD (" << src.str() << ")" ;
+                                        }
+
+                                }
+                        }
+                }
+        }
+        logMsgT(__func__,msg.str(),2,LOGFILE);
+        msg.str("");
+}
+
+//////////////////////////////////////////////////////////////
+// showMap function definition
+//////////////////////////////////////////////////////////////
+void QueryPlan::showMapSources (void)
+{
+        stringstream msg;
+        msg << "\n\t\t\tSOURCES LIST";
+        msg << "\n\t\t\t------------";
+        for (map<string,string>::const_iterator it=sources.begin(); it!=sources.end(); ++it)
+        {
+                msg << "\n\t\t\t ID: (" << it->first << ") SRC (" << it->second << ")";
+        }
+        msg << endl;
+        logMsgT(__func__,msg.str(),2,LOGFILE);
 }
 
 //////////////////////////////////////////////////////////////

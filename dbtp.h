@@ -32,7 +32,7 @@ class NodeQP
 class PredicateList
 {
         public:
-        map<int,string> pList;
+        vector<string> pList;
         void addPredicate (string predicate);
         void showFullRegistry(void);
 };
@@ -44,20 +44,26 @@ class QueryPlan
 {
         public:
         map<int,NodeQP> nodeList;
+        map<string,string> sources, interestedIn;
         PredicateList conjPredicateList, generalPredicateList;
-	string showChildren (int);
-	string getPredicate (void) const;
-	vector<string>	getAttributes (int);
 	void addDefinition (int, string);
 	void createPredLists (void);
-	vector<string> getPredicatesNode(int);
-	vector<string> getPredicatesOver(vector<string>);
-	vector<string> subtractLists(vector<string>, vector<string>);
-	vector<string> intersectLists(vector<string>, vector<string>);
 	void showVector(string, vector<string>);
 	void addNode (int, int, string,string);
         void initialize (void);
         void showNodeList (void);
+        void createSources (void);
+        void showMapSources (void);
+        void getAip (void);
+        vector<string> getAttributes (int);
+	vector<string> getAttributes (string);
+	vector<string> getPredicatesNode(int);
+	vector<string> getPredicatesOver(vector<string>);
+	vector<string> subtractLists(vector<string>, vector<string>);
+	vector<string> intersectLists(vector<string>, vector<string>);
+	vector<string> unionLists(vector<string>, vector<string>);
+	string showChildren (int);
+	string getPredicate (void) const;
 };
 
 //////////////////////////////////////////////////////////////
