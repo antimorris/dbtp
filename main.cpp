@@ -51,10 +51,11 @@ int main ()
         queryPlan.addNode(12,11,"P","receiptdate,>,2007-1-1,AND,OTHER");
         queryPlan.addNode(13,12,"T","L");
         queryPlan.createPredLists();
-        //queryPlan.showMapSources();
+        queryPlan.showMapSources();
         queryPlan.createSources();
         queryPlan.showMapSources();
-        cout << "OTHERRRRR: " << queryPlan.sources.at("OTHER");
+        queryPlan.getAip();
+
 /*
         // Show List of Nodes
         queryPlan.showNodeList();

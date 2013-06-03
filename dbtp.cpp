@@ -354,7 +354,7 @@ vector<string> QueryPlan::getAttributes (string rdef)
 void QueryPlan::getAip (void)
 {
         stringstream msg;
-        vector<string> predInN, predOverC, predP, attribA, attribC, attribP, aip;
+        vector<string> predInN, predOverC, predP, attribA, attribC, attribP, aip, tmpsrc;
         for (map<int,NodeQP>::const_iterator n=nodeList.begin(); n!=nodeList.end(); ++n)
         {
                 msg << "\n\t\tIter Node (" << n->first << ")" << endl;
@@ -377,7 +377,21 @@ void QueryPlan::getAip (void)
                                         attribA = intersectLists(attribP,attribC);
                                         for(unsigned a=0; a<attribA.size(); a++)
                                         {
-                                                aip = unionLists(aip,aip);
+                                                string p;
+                                                stringstream src,att, nid;
+                                                att << attribA[a];
+                                                nid << n->first;
+                                                istringstream attrF(att.str());
+                                                src << n->first << ",";
+                                                msg << "Added N (" << nid.str() << ") to sources";
+                                                while (getline(attrF, p, ','))
+                                                {
+                                                        if (p.compare(nid.str()) != 0)
+                                                        {
+                                                                src << src << p << ",";
+                                                                msg << "Appending source (" << p << ")";
+                                                        }
+                                                }
                                         }
                                 }
                         }
