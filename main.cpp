@@ -51,8 +51,9 @@ int main ()
         queryPlan.addNode(12,11,"P","receiptdate,>,2007-1-1,AND,OTHER");
         queryPlan.addNode(13,12,"T","L");
         queryPlan.createPredLists();
-        queryPlan.showMapSources();
         queryPlan.createSources();
+        queryPlan.showVector("GENERAL PREDICATE LIST",queryPlan.generalPredicateList.pList);
+        queryPlan.showVector("CONJ PREDICATE LIST",queryPlan.conjPredicateList.pList);
         queryPlan.showMapSources();
         queryPlan.getAip();
 

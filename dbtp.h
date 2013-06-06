@@ -45,14 +45,15 @@ class QueryPlan
         public:
         map<int,NodeQP> nodeList;
         map<string,string> sources, interestedIn;
+        map<int,vector<string> > nodePredicates, nodeAttributes;
         PredicateList conjPredicateList, generalPredicateList;
-	void addDefinition (int, string);
-	void createPredLists (void);
-	void showVector(string, vector<string>);
-	void addNode (int, int, string,string);
         void initialize (void);
-        void showNodeList (void);
-        void createSources (void);
+	void addDefinition (int, string);
+	void addNode (int, int, string,string);
+	void createPredLists (void);
+	void createSources (void);
+	void showVector(string, vector<string>);
+	void showNodeList (void);
         void showMapSources (void);
         void getAip (void);
         vector<string> getAttributes (int);

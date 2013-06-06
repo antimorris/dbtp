@@ -109,13 +109,13 @@ vector<string> QueryPlan::getPredicatesNode(int rnid)
         node = &nodeList[rnid];
         stringstream msg;
         vector<string> predicates, predicatesChild;
-        msg << "\n\t\t\tChecking Node ID (" << rnid << ") Type (" << node->nodeType << ")";
+        msg << "Checking Node ID (" << rnid << ") Type (" << node->nodeType << ")";
         logMsgT(__func__,msg.str(),2,LOGFILE);
         msg.str("");
         if (node->nodeType.compare("P") == 0)
         {
                 predicates.push_back(node->nodeDefinition);
-                msg << "\n\t\t\tAdded From ID (" << rnid << ") P (" ;
+                msg << "Added From ID (" << rnid << ") P (" ;
                 msg << node->nodeDefinition << ")" ;
                 logMsgT(__func__,msg.str(),2,LOGFILE);
                 msg.str("");
@@ -135,22 +135,26 @@ vector<string> QueryPlan::getPredicatesOver(vector<string> rattrib)
 {
         stringstream msg;
         vector<string> predicatesOver;
-        for(unsigned i=0; i<rattrib.size(); i++)
+        for(unsigned i=0; i<rattrib.size(); ++i)
         {
-                msg << "\n\t\t\tChecking A (" << rattrib[i] << ") on GPL";
-                for (unsigned j=0; j<generalPredicateList.pList.size(); j++)
+                msg << "Checking A (" << rattrib[i] << ") on GPL";
+                logMsgT(__func__,msg.str(),2,LOGFILE);
+                msg.str("");
+                for (unsigned j=0; j<generalPredicateList.pList.size(); ++j)
                 {
-                        if(find(generalPredicateList.pList.begin(),generalPredicateList.pList.end(),rattrib[i]) == generalPredicateList.pList.end())
+//                        cout << "--> MAX (rattribSize- i) (" << rattrib.size() << ") MAX (GPLsize - J) (" << generalPredicateList.pList.size() << ") -> i (" << i << ") J (" << j << ") A- (" << rattrib[i] << ")\n";
+                        if(generalPredicateList.pList[j].find(rattrib[i]) != std::string::npos)
                         {
-                                if(find(predicatesOver.begin(), predicatesOver.end(), generalPredicateList.pList[i])==predicatesOver.end())
+                                if(find(predicatesOver.begin(), predicatesOver.end(), generalPredicateList.pList[j])==predicatesOver.end())
                                 {
-                                        predicatesOver.push_back(generalPredicateList.pList[i]);
-                                        msg << "\n\t\t\t\t Found A on GPL - Predicate (" << generalPredicateList.pList[i] << ") Added to POA List" ;
+                                        predicatesOver.push_back(generalPredicateList.pList[j]);
+                                        msg << "Found A on GPL - Predicate (" << generalPredicateList.pList[j] << ") Added to POA List" ;
+                                        logMsgT(__func__,msg.str(),2,LOGFILE);
+                                        msg.str("");
                                 }
                         }
                 }
         }
-        logMsgT(__func__,msg.str(),2,LOGFILE);
         return predicatesOver;
 }
 
@@ -213,7 +217,7 @@ void QueryPlan::addNode (int rnid, int rpid, string rtype, string rdef)
 	node.nodeType   = rtype;
 	node.nodeParent = rpid;
 	node.nodeDefinition = rdef;
-	msg << "Ned Node:ID (" << rnid << ") PID (" << rpid << ") TYPE (" << rtype << ") DEF (" << rdef << ")";
+	msg << "Node:ID (" << rnid << ") PID (" << rpid << ") TYPE (" << rtype << ") DEF (" << rdef << ")";
 	logMsgT(__func__,msg.str(),2,LOGFILE);
 	nodeList.insert(pair<int,NodeQP>(rnid,node));
 	if (rnid == 0)
@@ -260,18 +264,20 @@ void QueryPlan::createPredLists (void)
                 if (it->second.nodeType.compare("P") == 0)
                 {
                         generalPredicateList.addPredicate(it->second.nodeDefinition);
-                        msg << "\n\t\t\tAdded predicate to GPL - Node: (" << it->first;
+                        msg << "Added predicate to GPL - Node: (" << it->first;
                         msg << ") TYPE: (" << it->second.nodeType << ") P: (" << it->second.nodeDefinition << ")" ;
+                        logMsgT(__func__, msg.str() ,2,LOGFILE);
+                        msg.str("");
                         if (it->second.nodeDefinition.find("AND") != std::string::npos)
                         {
                                 conjPredicateList.addPredicate(it->second.nodeDefinition);
-                                msg << "\n\t\t\tAdded predicate to CPL - Node: (" << it->first;
+                                msg << "Added predicate to CPL - Node: (" << it->first;
                                 msg << ") TYPE: (" << it->second.nodeType << ") P: (" << it->second.nodeDefinition << ")" ;
+                                logMsgT(__func__, msg.str() ,2,LOGFILE);
+                                msg.str("");
                         }
                 }
         }
-        msg << endl;
-        logMsgT(__func__, msg.str() ,2,LOGFILE);
 }
 
 //////////////////////////////////////////////////////////////
@@ -302,7 +308,9 @@ vector<string> QueryPlan::getAttributes (int rnid)
         string p;
         istringstream predicateF(node->nodeDefinition);
         vector<string> attribList, attribListChild;
-        msg << "\n\t\t\tChecking Node ID (" << rnid << ") Type (" << node->nodeType << ")";
+        msg << "Checking Node ID (" << rnid << ") Type (" << node->nodeType << ")";
+        logMsgT(__func__,msg.str(),2,LOGFILE);
+        msg.str("");
         if (node->nodeType.compare("P") == 0)
         {
                 while (getline(predicateF, p, ','))
@@ -310,13 +318,13 @@ vector<string> QueryPlan::getAttributes (int rnid)
                         if (p.compare("<") != 0 and p.compare(">") != 0 and p.compare("AND") != 0)
                         {
                                 attribList.push_back(p);
-                                msg << "\n\t\t\t\tAdded ATTRIB From ID (" << rnid << ") A (" ;
-                                msg << p << ")" ;
+                                msg << "Added ATTRIB From ID (" << rnid << ") A (" << p << ")" ;
+                                logMsgT(__func__,msg.str(),2,LOGFILE);
+                                msg.str("");
                         }
                 }
         }
-        logMsgT(__func__,msg.str(),2,LOGFILE);
-        msg.str("");
+
         for(unsigned i=0; i<node->nodeChildren.size(); i++)
         {
                 attribListChild = getAttributes(node->nodeChildren[i]);
@@ -334,13 +342,13 @@ vector<string> QueryPlan::getAttributes (string rdef)
         string p;
         istringstream predicateF(rdef);
         vector<string> attribList;
-        msg << "\n\t\t\tChecking A (" << rdef << ") to extract attributes";
+        msg << "Checking A (" << rdef << ") to extract attributes";
         while (getline(predicateF, p, ','))
         {
                 if (p.compare("<") != 0 and p.compare(">") != 0 and p.compare("AND") != 0)
                 {
                         attribList.push_back(p);
-                        msg << "\n\t\t\t\tAdded ATTRIB (" << p << ")" ;
+                        msg << "Added ATTRIB (" << p << ")" ;
                 }
         }
         logMsgT(__func__,msg.str(),2,LOGFILE);
@@ -355,22 +363,29 @@ void QueryPlan::getAip (void)
 {
         stringstream msg;
         vector<string> predInN, predOverC, predP, attribA, attribC, attribP, aip, tmpsrc;
+        msg << "getAIP function" << endl;
+        logMsgT(__func__,msg.str(),2,LOGFILE);
+        msg.str("");
         for (map<int,NodeQP>::const_iterator n=nodeList.begin(); n!=nodeList.end(); ++n)
         {
-                msg << "\n\t\tIter Node (" << n->first << ")" << endl;
+                msg << "Reading Node (" << n->first << ")";
                 logMsgT(__func__,msg.str(),2,LOGFILE);
                 msg.str("");
                 if (n->second.nodeType.compare("O-JOIN") == 0)
                 {
+                        msg << "Verifying O-JOIN Node (" << n->first << ")";
+                        logMsgT(__func__,msg.str(),2,LOGFILE);
+                        msg.str("");
                         predInN   = getPredicatesNode(n->first);
                         for(unsigned c=0; c<n->second.nodeChildren.size(); c++)
                         {
-                                msg << "\n\t\t\tIter Child (" << n->second.nodeChildren[c] << ")";
+                                msg << "Verifying from Node (" << n->first << ") Child (" << n->second.nodeChildren[c] << ")";
                                 logMsgT(__func__,msg.str(),2,LOGFILE);
                                 msg.str("");
                                 attribC = getAttributes(n->second.nodeChildren[c]);
                                 predOverC = getPredicatesOver(attribC);
                                 predP = intersectLists(subtractLists(predOverC,predInN),generalPredicateList.pList);
+
                                 for(unsigned p=0; p<predP.size(); p++)
                                 {
                                         attribP = getAttributes(predP[p]);
@@ -384,16 +399,21 @@ void QueryPlan::getAip (void)
                                                 istringstream attrF(att.str());
                                                 src << n->first << ",";
                                                 msg << "Added N (" << nid.str() << ") to sources";
+                                                logMsgT(__func__,msg.str(),2,LOGFILE);
+                                                msg.str("");
                                                 while (getline(attrF, p, ','))
                                                 {
                                                         if (p.compare(nid.str()) != 0)
                                                         {
                                                                 src << src << p << ",";
                                                                 msg << "Appending source (" << p << ")";
+                                                                logMsgT(__func__,msg.str(),2,LOGFILE);
+                                                                msg.str("");
                                                         }
                                                 }
                                         }
                                 }
+
                         }
                 }
         }
@@ -408,7 +428,9 @@ void QueryPlan::createSources (void)
         stringstream msg;
         for (map<int,NodeQP>::const_iterator it=nodeList.begin(); it!=nodeList.end(); ++it)
         {
-                msg << "\n\t\t\tExtracting Attrib from Node ID (" << it->first << ") Type (" << it->second.nodeType << ")";
+                msg << "Extracting Attrib from Node ID (" << it->first << ") Type (" << it->second.nodeType << ")";
+                logMsgT(__func__,msg.str(),2,LOGFILE);
+                msg.str("");
                 istringstream predicateF(it->second.nodeDefinition);
                 if (it->second.nodeType.compare("P") == 0)
                 {
@@ -423,22 +445,24 @@ void QueryPlan::createSources (void)
                                                 stringstream src;
                                                 src << it->first;
                                                 sources.insert(pair<string,string>(p,src.str()));
-                                                msg << "\n\t\t\t\tAdded NEW Source (" << it->first << ") to A (" << p << ")" ;
+                                                msg << "Added NEW Source (" << it->first << ") to A (" << p << ")" ;
+                                                logMsgT(__func__,msg.str(),2,LOGFILE);
+                                                msg.str("");
                                         }
                                         else
                                         {
                                                 stringstream src;
                                                 src << sources.at(p) << "," << it->first;
                                                 sources[p] = src.str() ;
-                                                msg << "\n\t\t\t\tAdded Source (" << it->first << ") to A (" << p << ") UPD (" << src.str() << ")" ;
+                                                msg << "Added Source (" << it->first << ") to A (" << p << ") UPD (" << src.str() << ")" ;
+                                                logMsgT(__func__,msg.str(),2,LOGFILE);
+                                                msg.str("");
                                         }
 
                                 }
                         }
                 }
         }
-        logMsgT(__func__,msg.str(),2,LOGFILE);
-        msg.str("");
 }
 
 //////////////////////////////////////////////////////////////
