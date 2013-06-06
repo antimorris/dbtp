@@ -56,6 +56,7 @@ int main ()
         queryPlan.showVector("CONJ PREDICATE LIST",queryPlan.conjPredicateList.pList);
         queryPlan.showMapSources();
         queryPlan.getAip();
+        queryPlan.showMapSources();
 
 /*
         // Show List of Nodes

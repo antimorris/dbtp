@@ -148,10 +148,14 @@ vector<string> QueryPlan::getPredicatesOver(vector<string> rattrib)
                                 if(find(predicatesOver.begin(), predicatesOver.end(), generalPredicateList.pList[j])==predicatesOver.end())
                                 {
                                         predicatesOver.push_back(generalPredicateList.pList[j]);
-                                        msg << "Found A on GPL - Predicate (" << generalPredicateList.pList[j] << ") Added to POA List" ;
-                                        logMsgT(__func__,msg.str(),2,LOGFILE);
-                                        msg.str("");
+                                        msg << "Found A on GPL - Predicate (" << generalPredicateList.pList[j] << ") added to POA List" ;
                                 }
+                                else
+                                {
+                                        msg << "Found A on GPL - Predicate (" << generalPredicateList.pList[j] << ") already exists in POA List" ;
+                                }
+                                logMsgT(__func__,msg.str(),2,LOGFILE);
+                                msg.str("");
                         }
                 }
         }
@@ -300,7 +304,7 @@ string QueryPlan::showChildren (int rpid)
 //////////////////////////////////////////////////////////////
 // QP getAttributes function definition
 //////////////////////////////////////////////////////////////
-vector<string> QueryPlan::getAttributes (int rnid)
+vector<string> QueryPlan::getAttributesNode (int rnid)
 {
         NodeQP* node;
         node = &nodeList[rnid];
@@ -327,7 +331,7 @@ vector<string> QueryPlan::getAttributes (int rnid)
 
         for(unsigned i=0; i<node->nodeChildren.size(); i++)
         {
-                attribListChild = getAttributes(node->nodeChildren[i]);
+                attribListChild = getAttributesNode(node->nodeChildren[i]);
                 attribList.insert (attribList.end(),attribListChild.begin(),attribListChild.end());
         }
         return attribList;
@@ -336,22 +340,25 @@ vector<string> QueryPlan::getAttributes (int rnid)
 //////////////////////////////////////////////////////////////
 // QP getAttributes function definition
 //////////////////////////////////////////////////////////////
-vector<string> QueryPlan::getAttributes (string rdef)
+vector<string> QueryPlan::getAttributesPredicate (string rdef)
 {
         stringstream msg;
         string p;
         istringstream predicateF(rdef);
         vector<string> attribList;
         msg << "Checking A (" << rdef << ") to extract attributes";
+        logMsgT(__func__,msg.str(),2,LOGFILE);
+        msg.str("");
         while (getline(predicateF, p, ','))
         {
                 if (p.compare("<") != 0 and p.compare(">") != 0 and p.compare("AND") != 0)
                 {
                         attribList.push_back(p);
                         msg << "Added ATTRIB (" << p << ")" ;
+                        logMsgT(__func__,msg.str(),2,LOGFILE);
+                        msg.str("");
                 }
         }
-        logMsgT(__func__,msg.str(),2,LOGFILE);
         return attribList;
 }
 
@@ -363,7 +370,7 @@ void QueryPlan::getAip (void)
 {
         stringstream msg;
         vector<string> predInN, predOverC, predP, attribA, attribC, attribP, aip, tmpsrc;
-        msg << "getAIP function" << endl;
+        msg << "Initializing Sources Retrieval" << endl;
         logMsgT(__func__,msg.str(),2,LOGFILE);
         msg.str("");
         for (map<int,NodeQP>::const_iterator n=nodeList.begin(); n!=nodeList.end(); ++n)
@@ -382,43 +389,55 @@ void QueryPlan::getAip (void)
                                 msg << "Verifying from Node (" << n->first << ") Child (" << n->second.nodeChildren[c] << ")";
                                 logMsgT(__func__,msg.str(),2,LOGFILE);
                                 msg.str("");
-                                attribC = getAttributes(n->second.nodeChildren[c]);
+                                attribC = getAttributesNode(n->second.nodeChildren[c]);
                                 predOverC = getPredicatesOver(attribC);
                                 predP = intersectLists(subtractLists(predOverC,predInN),generalPredicateList.pList);
 
                                 for(unsigned p=0; p<predP.size(); p++)
                                 {
-                                        attribP = getAttributes(predP[p]);
+                                        attribP = getAttributesPredicate(predP[p]);
                                         attribA = intersectLists(attribP,attribC);
                                         for(unsigned a=0; a<attribA.size(); a++)
                                         {
-                                                string p;
-                                                stringstream src,att, nid;
-                                                att << attribA[a];
-                                                nid << n->first;
-                                                istringstream attrF(att.str());
-                                                src << n->first << ",";
-                                                msg << "Added N (" << nid.str() << ") to sources";
+                                                addSource(attribA[a],n->first);
                                                 logMsgT(__func__,msg.str(),2,LOGFILE);
                                                 msg.str("");
-                                                while (getline(attrF, p, ','))
-                                                {
-                                                        if (p.compare(nid.str()) != 0)
-                                                        {
-                                                                src << src << p << ",";
-                                                                msg << "Appending source (" << p << ")";
-                                                                logMsgT(__func__,msg.str(),2,LOGFILE);
-                                                                msg.str("");
-                                                        }
-                                                }
                                         }
                                 }
 
                         }
                 }
+                msg << "Iteration for Node (" << n->first << ") has finished. Reading next one\n";
+                logMsgT(__func__,msg.str(),2,LOGFILE);
+                msg.str("");
+        }
+        msg << "Initializing InterestedIn Retrieval" << endl;
+        logMsgT(__func__,msg.str(),2,LOGFILE);
+        msg.str("");
+        for (map<string,string>::const_iterator it=sources.begin(); it!=sources.end(); ++it)
+        {
+                for (map<int,NodeQP>::const_iterator n=nodeList.begin(); n!=nodeList.end(); ++n)
+                {
+                        msg << "Reading Node (" << n->first << ")";
+                        logMsgT(__func__,msg.str(),2,LOGFILE);
+                        msg.str("");
+                        if (n->second.nodeType.compare("O-JOIN") == 0)
+                        {
+                                msg << "Verifying O-JOIN Node (" << n->first << ")";
+                                logMsgT(__func__,msg.str(),2,LOGFILE);
+                                msg.str("");
+                        }
+                }
         }
 }
 
+//////////////////////////////////////////////////////////////
+// QueryPlan::createEQ function definition
+//////////////////////////////////////////////////////////////
+void QueryPlan::createEQ (void)
+{
+
+}
 //////////////////////////////////////////////////////////////
 // QueryPlan::createSources function definition
 //////////////////////////////////////////////////////////////
@@ -438,32 +457,39 @@ void QueryPlan::createSources (void)
                         {
                                 if (p.compare("<") != 0 and p.compare(">") != 0 and p.compare("AND") != 0)
                                 {
-                                        stringstream tmpid;
-                                        tmpid << "," << it->first << ",";
-                                        if (sources.find(p) == sources.end())
-                                        {
-                                                stringstream src;
-                                                src << it->first;
-                                                sources.insert(pair<string,string>(p,src.str()));
-                                                msg << "Added NEW Source (" << it->first << ") to A (" << p << ")" ;
-                                                logMsgT(__func__,msg.str(),2,LOGFILE);
-                                                msg.str("");
-                                        }
-                                        else
-                                        {
-                                                stringstream src;
-                                                src << sources.at(p) << "," << it->first;
-                                                sources[p] = src.str() ;
-                                                msg << "Added Source (" << it->first << ") to A (" << p << ") UPD (" << src.str() << ")" ;
-                                                logMsgT(__func__,msg.str(),2,LOGFILE);
-                                                msg.str("");
-                                        }
-
+                                        addSource(p,it->first);
                                 }
                         }
                 }
         }
 }
+
+//////////////////////////////////////////////////////////////
+// QueryPlan::addSource function definition
+//////////////////////////////////////////////////////////////
+void QueryPlan::addSource (string rpred,int rsrc)
+{
+        stringstream msg;
+        if (sources.find(rpred) == sources.end())
+        {
+                stringstream src;
+                src << rsrc;
+                sources.insert(pair<string,string>(rpred,src.str()));
+                msg << "Added NEW Source (" << rsrc << ") to A (" << rpred << ")" ;
+                logMsgT(__func__,msg.str(),2,LOGFILE);
+                msg.str("");
+        }
+        else
+        {
+                stringstream src;
+                src << sources.at(rpred) << "," << rsrc;
+                sources[rpred] = src.str() ;
+                msg << "Added Source (" << rsrc << ") to A (" << rpred << ") UPD (" << src.str() << ")" ;
+                logMsgT(__func__,msg.str(),2,LOGFILE);
+                msg.str("");
+        }
+}
+
 
 //////////////////////////////////////////////////////////////
 // showMap function definition
