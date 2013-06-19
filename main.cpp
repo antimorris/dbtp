@@ -8,9 +8,11 @@ using namespace std;
 //////////////////////////////////////////////////////////////
 int main ()
 {
-    //*****************************************
-    //Create and load the initial database
-    //*****************************************
+        /*******************************************************/
+        /*******************************************************/
+        /**   Create and load the initial database            **/
+        /*******************************************************/
+        /*******************************************************/
 
     // I have commented this part temporary to avoid the loading of the database each single test
         /*
@@ -32,9 +34,14 @@ int main ()
         cout<<test.tuples.size()<<endl;
         */
 
-	// *************************************
-        // Creation of Query Plan for Example 1
-        // *************************************
+        /*******************************************************/
+	/*******************************************************/
+	/*******************************************************/
+
+	/*******************************************************/
+        /*** Creation of Query Plan for Example 1           ****/
+        /*******************************************************/
+
         QueryPlan queryPlan;
         queryPlan.addNode(0,0,"O-JOIN","partkey");
         queryPlan.addNode(1,0,"O-DISTINCT","partkey");
@@ -42,14 +49,25 @@ int main ()
         queryPlan.addNode(3,2,"P","2*supplycost,<,retailprice");
         queryPlan.addNode(4,3,"O-JOIN","retailprice");
         queryPlan.addNode(5,4,"T","P");
-        queryPlan.addNode(6,4,"T","PS1");
+        queryPlan.addNode(6,4,"T","PS");
         queryPlan.addNode(7,0,"P","10*avail,<,numsold");
         queryPlan.addNode(8,7,"O-JOIN","partkey");
-        queryPlan.addNode(9,8,"Y","SUM(availqty) as avail partkey");
-        queryPlan.addNode(10,9,"P","retailprice,<,OTHER");
-        queryPlan.addNode(11,8,"Y","SUM(availqty) as numsold partkey");
+        queryPlan.addNode(9,8,"Y","avail");
+        queryPlan.addNode(10,9,"P","retailprice,=,OTHER");
+        queryPlan.addNode(11,8,"Y","numsold");
         queryPlan.addNode(12,11,"P","receiptdate,>,2007-1-1,AND,OTHER");
         queryPlan.addNode(13,12,"T","L");
+        queryPlan.addNode(14,13,"P","p_partkey,=,ps_partkey");
+        /******************************************************/
+        /** Source-Graph for transitively equated predicates **/
+        /******************************************************/
+        queryPlan.attributesEq.push_back("p_partkey,=,ps_partkey");
+        queryPlan.attributesEq.push_back("p_partkey,=,avail.partkey");
+        queryPlan.attributesEq.push_back("p_partkey,=,sold.partkey");
+
+        /*******************************************************/
+        /** Execution                                         **/
+        /*******************************************************/
         queryPlan.createPredLists();
         queryPlan.createSources();
         queryPlan.showVector("GENERAL PREDICATE LIST",queryPlan.generalPredicateList.pList);
@@ -57,6 +75,8 @@ int main ()
         queryPlan.showMapSources();
         queryPlan.getAip();
         queryPlan.showMapSources();
+        queryPlan.showMapInterestedIn();
+        /*******************************************************/
 
 /*
         // Show List of Nodes

@@ -315,8 +315,8 @@ vector<string> QueryPlan::getAttributesNode (int rnid)
         msg << "Checking Node ID (" << rnid << ") Type (" << node->nodeType << ")";
         logMsgT(__func__,msg.str(),2,LOGFILE);
         msg.str("");
-        if (node->nodeType.compare("P") == 0)
-        {
+     //   if (node->nodeType.compare("P") == 0)
+     //   {
                 while (getline(predicateF, p, ','))
                 {
                         if (p.compare("<") != 0 and p.compare(">") != 0 and p.compare("AND") != 0)
@@ -327,13 +327,14 @@ vector<string> QueryPlan::getAttributesNode (int rnid)
                                 msg.str("");
                         }
                 }
-        }
-
+    //    }
+/*
         for(unsigned i=0; i<node->nodeChildren.size(); i++)
         {
                 attribListChild = getAttributesNode(node->nodeChildren[i]);
                 attribList.insert (attribList.end(),attribListChild.begin(),attribListChild.end());
         }
+*/
         return attribList;
 }
 
@@ -411,11 +412,18 @@ void QueryPlan::getAip (void)
                 logMsgT(__func__,msg.str(),2,LOGFILE);
                 msg.str("");
         }
+        showMapSources();
         msg << "Initializing InterestedIn Retrieval" << endl;
         logMsgT(__func__,msg.str(),2,LOGFILE);
         msg.str("");
         for (map<string,string>::const_iterator it=sources.begin(); it!=sources.end(); ++it)
         {
+                vector<string> equatedA;
+                msg << "Getting the EQ for A (" << it->first << ")";
+                logMsgT(__func__,msg.str(),2,LOGFILE);
+                msg.str("");
+                equatedA = getEQ(it->first);
+                showVector("EQUATED A",equatedA);
                 for (map<int,NodeQP>::const_iterator n=nodeList.begin(); n!=nodeList.end(); ++n)
                 {
                         msg << "Reading Node (" << n->first << ")";
@@ -423,9 +431,32 @@ void QueryPlan::getAip (void)
                         msg.str("");
                         if (n->second.nodeType.compare("O-JOIN") == 0)
                         {
-                                msg << "Verifying O-JOIN Node (" << n->first << ")";
+                                msg << "O-JOIN Node (" << n->first << ")";
                                 logMsgT(__func__,msg.str(),2,LOGFILE);
                                 msg.str("");
+                                vector<string> attribsN = getAttributesNode(n->first);
+                                showVector("ATTRIBS OF N",attribsN);
+                                vector<string> equatedANode;
+                                for(unsigned a=0; a<attribsN.size(); ++a)
+                                {
+                                        msg << "Getting EQ attribs from (" << attribsN[a] << ") from Node (" << n->first << ")";
+                                        logMsgT(__func__,msg.str(),2,LOGFILE);
+                                        msg.str("");
+                                        vector<string> equatedSingleA = getEQ(attribsN[a]);
+                                        equatedANode.insert(equatedANode.end(),equatedSingleA.begin(),equatedSingleA.end());
+                                }
+                                vector<string> eqAandNode = unionLists(equatedA,equatedANode);
+                                showVector("EQUATED A AND EQUATED A(n)",eqAandNode);
+                                showVector("GENERAL LIST",generalPredicateList.pList);
+                                vector<string> Pbetween = intersectLists(eqAandNode,generalPredicateList.pList);
+                                showVector("P between EQ(A) and EQ(Attr-n)",Pbetween);
+                                if (Pbetween.size()>0)
+                                {
+                                        msg << "Found p on P. Adding INTERESTEDIN A (" << it->first<<")";
+                                        logMsgT(__func__,msg.str(),2,LOGFILE);
+                                        msg.str("");
+                                        addInterestedIn(it->first,n->first);
+                                }
                         }
                 }
         }
@@ -434,9 +465,22 @@ void QueryPlan::getAip (void)
 //////////////////////////////////////////////////////////////
 // QueryPlan::createEQ function definition
 //////////////////////////////////////////////////////////////
-void QueryPlan::createEQ (void)
+vector<string> QueryPlan::getEQ (string rpred)
 {
-
+        vector<string> eqPred;
+        stringstream msg;
+        msg << "Searching (" << rpred << ") in EQ Vector" ;
+        logMsgT(__func__,msg.str(),2,LOGFILE);
+        msg.str("");
+        for(unsigned p=0; p<attributesEq.size(); p++)
+        if (attributesEq[p].find(rpred) != std::string::npos)
+        {
+                eqPred.push_back(attributesEq[p]);
+                msg << "Found Equated predicate (" << attributesEq[p] << ")";
+                logMsgT(__func__,msg.str(),2,LOGFILE);
+                msg.str("");
+        }
+        return eqPred;
 }
 //////////////////////////////////////////////////////////////
 // QueryPlan::createSources function definition
@@ -455,7 +499,7 @@ void QueryPlan::createSources (void)
                 {
                         while (getline(predicateF, p, ','))
                         {
-                                if (p.compare("<") != 0 and p.compare(">") != 0 and p.compare("AND") != 0)
+                                if (p.compare("<") != 0 and p.compare(">") != 0 and p.compare("AND") != 0 and p.compare("=") != 0)
                                 {
                                         addSource(p,it->first);
                                 }
@@ -490,6 +534,31 @@ void QueryPlan::addSource (string rpred,int rsrc)
         }
 }
 
+//////////////////////////////////////////////////////////////
+// QueryPlan::addInterested function definition
+//////////////////////////////////////////////////////////////
+void QueryPlan::addInterestedIn (string rpred,int rsrc)
+{
+        stringstream msg;
+        if (interestedIn.find(rpred) == interestedIn.end())
+        {
+                stringstream src;
+                src << rsrc;
+                interestedIn.insert(pair<string,string>(rpred,src.str()));
+                msg << "Added NEW InterestedIn (" << rsrc << ") to A (" << rpred << ")" ;
+                logMsgT(__func__,msg.str(),2,LOGFILE);
+                msg.str("");
+        }
+        else
+        {
+                stringstream src;
+                src << interestedIn.at(rpred) << "," << rsrc;
+                interestedIn[rpred] = src.str() ;
+                msg << "Added InterestedIn (" << rsrc << ") to A (" << rpred << ") UPD (" << src.str() << ")" ;
+                logMsgT(__func__,msg.str(),2,LOGFILE);
+                msg.str("");
+        }
+}
 
 //////////////////////////////////////////////////////////////
 // showMap function definition
@@ -500,6 +569,22 @@ void QueryPlan::showMapSources (void)
         msg << "\n\t\t\tSOURCES LIST";
         msg << "\n\t\t\t------------";
         for (map<string,string>::const_iterator it=sources.begin(); it!=sources.end(); ++it)
+        {
+                msg << "\n\t\t\t ID: (" << it->first << ") SRC (" << it->second << ")";
+        }
+        msg << endl;
+        logMsgT(__func__,msg.str(),2,LOGFILE);
+}
+
+//////////////////////////////////////////////////////////////
+// showMapInterestedIn function definition
+//////////////////////////////////////////////////////////////
+void QueryPlan::showMapInterestedIn (void)
+{
+        stringstream msg;
+        msg << "\n\t\t\tINTERESTED IN LIST";
+        msg << "\n\t\t\t------------";
+        for (map<string,string>::const_iterator it=interestedIn.begin(); it!=interestedIn.end(); ++it)
         {
                 msg << "\n\t\t\t ID: (" << it->first << ") SRC (" << it->second << ")";
         }

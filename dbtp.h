@@ -38,13 +38,14 @@ class PredicateList
 };
 
 //////////////////////////////////////////////////////////////
+
 // QP Class definition
 //////////////////////////////////////////////////////////////
 class QueryPlan
 {
         public:
+        vector<string> attributesEq;
         map<int,NodeQP> nodeList;
-        map<string,vector<string> > attributesEq;
         map<string,string> sources, interestedIn;
         map<int,vector<string> > nodePredicates, nodeAttributes;
         PredicateList conjPredicateList, generalPredicateList;
@@ -52,13 +53,15 @@ class QueryPlan
 	void addDefinition (int, string);
 	void addNode (int, int, string,string);
 	void addSource (string,int);
+	void addInterestedIn (string,int);
 	void createPredLists (void);
 	void createSources (void);
-	void createEQ (void);
 	void showVector(string, vector<string>);
 	void showNodeList (void);
         void showMapSources (void);
+        void showMapInterestedIn (void);
         void getAip (void);
+        vector<string> getEQ (string);
         vector<string> getAttributesNode (int);
 	vector<string> getAttributesPredicate (string);
 	vector<string> getPredicatesNode(int);
