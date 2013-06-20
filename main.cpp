@@ -127,6 +127,14 @@ int main ()
         aipRegistry.checkPredicate(1);
 */
 
+        printf("PID of this process: %d\n", getpid());
+        pthread_t thread1, thread2;
+        pthread_create(&thread1, NULL, someThread, NULL);
+        sleep(1);
+        pthread_create(&thread2, NULL, someThread, NULL);
+        pthread_join(thread1, NULL);
+        pthread_join(thread2, NULL);
+
 
 	exit(0);
 }

@@ -1,4 +1,5 @@
 #include <string>
+#include <iomanip>
 #include <iostream>
 #include <cstdlib>
 #include <vector>
@@ -7,12 +8,18 @@
 #include <fstream>
 #include <pthread.h>
 #include <stdio.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <time.h>
+
 using namespace std;
 //////////////////////////////////////////////////////////////
 // Prototypes
 //////////////////////////////////////////////////////////////
 string getTime (void);
 void logMsgT (string function_name, string msg_data, int msg_code, string logfile);
+void* someThread(void* tmp);
 
 //////////////////////////////////////////////////////////////
 // NodeQP Class definition

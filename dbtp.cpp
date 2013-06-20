@@ -592,6 +592,34 @@ void QueryPlan::showMapInterestedIn (void)
         logMsgT(__func__,msg.str(),2,LOGFILE);
 }
 
+
+void* someThread(void* tmp)
+{
+        char msg[100];
+        sprintf(msg,"PID [%d] THREADID [%u] \n", getpid(),(unsigned int)pthread_self());
+        cout << msg;
+        sleep(2); // Keep it alive so we're sure the second thread gets a unique ID.
+        return NULL;
+}
+
+//////////////////////////////////////////////////////////////
+// logMsgT function definition
+//////////////////////////////////////////////////////////////
+/*
+int QueryManager(int argc, char **argv)
+{
+        string msg_timestamp;
+        printf("PID of this process: %d\n", getpid());
+        pthread_t thread1, thread2;
+        pthread_create(&thread1, NULL, someThread, NULL);
+        sleep(1); // Hack to avoid race for stdout.
+        pthread_create(&thread2, NULL, someThread, NULL);
+        pthread_join(thread1, NULL);
+        pthread_join(thread2, NULL);
+        return(0);
+}
+*/
+
 //////////////////////////////////////////////////////////////
 // logMsgT function definition
 //////////////////////////////////////////////////////////////
