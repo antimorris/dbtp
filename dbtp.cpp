@@ -282,6 +282,10 @@ void QueryPlan::createPredLists (void)
                         }
                 }
         }
+        for(unsigned i=0;i< attributesEq.size();i++)
+        {
+                generalPredicateList.addPredicate(attributesEq[i]);
+        }
 }
 
 //////////////////////////////////////////////////////////////
@@ -405,15 +409,14 @@ void QueryPlan::getAip (void)
                                                 msg.str("");
                                         }
                                 }
-
                         }
                 }
-                msg << "Iteration for Node (" << n->first << ") has finished. Reading next one\n";
+                msg << "Iteration for Node (" << n->first << ") has finished. Reading next one";
                 logMsgT(__func__,msg.str(),2,LOGFILE);
                 msg.str("");
         }
         showMapSources();
-        msg << "Initializing InterestedIn Retrieval" << endl;
+        msg << "Initializing InterestedIn Retrieval";
         logMsgT(__func__,msg.str(),2,LOGFILE);
         msg.str("");
         for (map<string,string>::const_iterator it=sources.begin(); it!=sources.end(); ++it)
@@ -423,7 +426,6 @@ void QueryPlan::getAip (void)
                 logMsgT(__func__,msg.str(),2,LOGFILE);
                 msg.str("");
                 equatedA = getEQ(it->first);
-                showVector("EQUATED A",equatedA);
                 for (map<int,NodeQP>::const_iterator n=nodeList.begin(); n!=nodeList.end(); ++n)
                 {
                         msg << "Reading Node (" << n->first << ")";
@@ -435,8 +437,7 @@ void QueryPlan::getAip (void)
                                 logMsgT(__func__,msg.str(),2,LOGFILE);
                                 msg.str("");
                                 vector<string> attribsN = getAttributesNode(n->first);
-                                showVector("ATTRIBS OF N",attribsN);
-                                vector<string> equatedANode;
+                                vector<string> equatedANode,equatedANodeU;
                                 for(unsigned a=0; a<attribsN.size(); ++a)
                                 {
                                         msg << "Getting EQ attribs from (" << attribsN[a] << ") from Node (" << n->first << ")";
@@ -445,18 +446,43 @@ void QueryPlan::getAip (void)
                                         vector<string> equatedSingleA = getEQ(attribsN[a]);
                                         equatedANode.insert(equatedANode.end(),equatedSingleA.begin(),equatedSingleA.end());
                                 }
-                                vector<string> eqAandNode = unionLists(equatedA,equatedANode);
-                                showVector("EQUATED A AND EQUATED A(n)",eqAandNode);
-                                showVector("GENERAL LIST",generalPredicateList.pList);
-                                vector<string> Pbetween = intersectLists(eqAandNode,generalPredicateList.pList);
-                                showVector("P between EQ(A) and EQ(Attr-n)",Pbetween);
-                                if (Pbetween.size()>0)
+                                for (unsigned cnt=0; cnt<equatedANode.size();cnt++)
                                 {
-                                        msg << "Found p on P. Adding INTERESTEDIN A (" << it->first<<")";
-                                        logMsgT(__func__,msg.str(),2,LOGFILE);
-                                        msg.str("");
-                                        addInterestedIn(it->first,n->first);
+                                        if(find(equatedANodeU.begin(), equatedANodeU.end(), equatedANode[cnt])==equatedANodeU.end())
+                                        {
+                                                equatedANodeU.push_back(equatedANode[cnt]);
+                                        }
                                 }
+                                vector<string> eqAandNode = unionLists(equatedA,equatedANodeU);
+                                vector<string> attributesEQAandN;
+                                for (unsigned pl=0; pl<eqAandNode.size();pl++)
+                                {
+                                        vector<string> attribIter;
+                                        attribIter = getAttributesPredicate(eqAandNode[pl]);
+                                        attributesEQAandN.insert(attributesEQAandN.end(),attribIter.begin(),attribIter.end());
+                                }
+                                for(unsigned at=0;at<attributesEQAandN.size();at++)
+                                {
+                                        if (attributesEQAandN[at].compare("<") != 0 and attributesEQAandN[at].compare(">") != 0 and attributesEQAandN[at].compare("AND") != 0 and attributesEQAandN[at].compare("=") != 0)
+                                        {
+                                                msg << "Checking EQ-A (" << attributesEQAandN[at] << ") on General List";
+                                                logMsgT(__func__,msg.str(),2,LOGFILE);
+                                                msg.str("");
+                                                if(find(generalPredicateList.pList.begin(),generalPredicateList.pList.end(),attributesEQAandN[at])==generalPredicateList.pList.end())
+                                                {
+                                                        msg << "Found p on P with (" << attributesEQAandN[at] << "). Adding INTERESTEDIN A (" << it->first<<")";
+                                                        logMsgT(__func__,msg.str(),2,LOGFILE);
+                                                        msg.str("");
+                                                        addInterestedIn(it->first,n->first);
+                                                }
+                                        }
+                                }
+                                showVector("A(n)",attribsN);
+                                showVector("EQUATED A(n)",equatedANodeU);
+                                showVector("EQUATED A",equatedA);
+                                showVector("EQUATED A AND EQUATED A(n)",eqAandNode);
+                                showVector("ATTRIBUTES EQUATED A",attributesEQAandN);
+                                showVector("GENERAL LIST",generalPredicateList.pList);
                         }
                 }
         }
@@ -469,17 +495,23 @@ vector<string> QueryPlan::getEQ (string rpred)
 {
         vector<string> eqPred;
         stringstream msg;
+        int flag;
         msg << "Searching (" << rpred << ") in EQ Vector" ;
         logMsgT(__func__,msg.str(),2,LOGFILE);
         msg.str("");
         for(unsigned p=0; p<attributesEq.size(); p++)
-        if (attributesEq[p].find(rpred) != std::string::npos)
         {
-                eqPred.push_back(attributesEq[p]);
-                msg << "Found Equated predicate (" << attributesEq[p] << ")";
-                logMsgT(__func__,msg.str(),2,LOGFILE);
-                msg.str("");
+                if (attributesEq[p].find(rpred) != std::string::npos)
+                {
+                        eqPred.push_back(attributesEq[p]);
+                        msg << "Found Equated predicate (" << attributesEq[p] << ")";
+                        logMsgT(__func__,msg.str(),2,LOGFILE);
+                        msg.str("");
+                        flag++;
+                }
         }
+        if (flag != 0)
+                eqPred.push_back(rpred);
         return eqPred;
 }
 //////////////////////////////////////////////////////////////
@@ -525,12 +557,25 @@ void QueryPlan::addSource (string rpred,int rsrc)
         }
         else
         {
-                stringstream src;
-                src << sources.at(rpred) << "," << rsrc;
-                sources[rpred] = src.str() ;
-                msg << "Added Source (" << rsrc << ") to A (" << rpred << ") UPD (" << src.str() << ")" ;
+                stringstream src,val;
+                val << "," << rsrc << ",";
+                msg << "Checking Source (" << val.str() << ") on Sources List";
                 logMsgT(__func__,msg.str(),2,LOGFILE);
                 msg.str("");
+                if (sources[rpred].find(val.str()) != std::string::npos)
+                {
+                        msg << "Source already on Sources List";
+                        logMsgT(__func__,msg.str(),2,LOGFILE);
+                        msg.str("");
+                }
+                else
+                {
+                        src << sources.at(rpred) << "," << rsrc;
+                        sources[rpred] = src.str() ;
+                        msg << "Added Source (" << rsrc << ") to A (" << rpred << ") UPD (" << src.str() << ")" ;
+                        logMsgT(__func__,msg.str(),2,LOGFILE);
+                        msg.str("");
+                }
         }
 }
 
@@ -551,12 +596,25 @@ void QueryPlan::addInterestedIn (string rpred,int rsrc)
         }
         else
         {
-                stringstream src;
-                src << interestedIn.at(rpred) << "," << rsrc;
-                interestedIn[rpred] = src.str() ;
-                msg << "Added InterestedIn (" << rsrc << ") to A (" << rpred << ") UPD (" << src.str() << ")" ;
+                stringstream src,val1;
+                val1 << "," << rsrc ;
+                msg << "Checking InterestedIn ('" << val1.str() << "') on ('" << interestedIn[rpred] << "')";
                 logMsgT(__func__,msg.str(),2,LOGFILE);
                 msg.str("");
+                if (interestedIn[rpred].find(val1.str()) != std::string::npos)
+                {
+                        msg << "Source already on InterestedIn List";
+                        logMsgT(__func__,msg.str(),2,LOGFILE);
+                        msg.str("");
+                }
+                else
+                {
+                        src << interestedIn.at(rpred) << "," << rsrc;
+                        interestedIn[rpred] = src.str() ;
+                        msg << "Added InterestedIn (" << rsrc << ") to A (" << rpred << ") UPD (" << src.str() << ")" ;
+                        logMsgT(__func__,msg.str(),2,LOGFILE);
+                        msg.str("");
+                }
         }
 }
 

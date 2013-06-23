@@ -15,14 +15,13 @@
 using namespace std;
 
 struct table {
-  vector <string> fields;
-  vector< vector<string> > tuples;
+  std::vector <std::string> fields;
+  std::vector< vector<std::string> > tuples;
 } ;
 
+
 void loadTable(const char *path, table *table);
-
 table JOIN (table A, table B, string field);
-
 table SELECT (table A, vector<string> fields);
 
 
